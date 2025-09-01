@@ -66,8 +66,8 @@ export function ThoughtCard({ thought, onViewReport, onDelete }: ThoughtCardProp
       >
         <div className="p-6">
           <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+            <div className="flex-1 pr-4">
+              <h3 className="font-semibold text-gray-900 mb-2">
                 {thought.title}
               </h3>
               <div className="flex items-center space-x-4 text-sm text-gray-500">

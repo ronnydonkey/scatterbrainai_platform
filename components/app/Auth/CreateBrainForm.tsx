@@ -16,6 +16,7 @@ export function CreateBrainForm({ onSuccess }: CreateBrainFormProps) {
   const [brainName, setBrainName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showConfirmation, setShowConfirmation] = useState(false)
   
   const { signUp } = useAuth()
 
@@ -47,13 +48,52 @@ export function CreateBrainForm({ onSuccess }: CreateBrainFormProps) {
           onboarding_completed: false
         })
         
-        onSuccess()
+        setShowConfirmation(true)
       }
     } catch {
       setError('An unexpected error occurred')
     } finally {
       setLoading(false)
     }
+  }
+
+  if (showConfirmation) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md text-center"
+        >
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4"
+          >
+            <Mail className="w-8 h-8 text-green-600" />
+          </motion.div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Check Your Email!</h2>
+          <p className="text-gray-600 mb-6">
+            We've sent a confirmation link to <strong>{email}</strong>
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+            <p className="text-sm text-blue-700">
+              Click the link in your email to activate your brain and start your 7-day free trial.
+            </p>
+          </div>
+          <p className="text-sm text-gray-500">
+            Didn't receive the email? Check your spam folder or{' '}
+            <button
+              onClick={() => window.location.reload()}
+              className="text-blue-600 hover:text-blue-700 font-medium"
+            >
+              try again
+            </button>
+          </p>
+        </motion.div>
+      </div>
+    )
   }
 
   return (

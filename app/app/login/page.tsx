@@ -1,7 +1,7 @@
 'use client'
 
-import { AuthForm } from '@/components/app/Auth/AuthForm'
+import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
 
 export default function LoginPage() {
-  return <AuthForm />
+  return <SimpleAuthForm />
 }

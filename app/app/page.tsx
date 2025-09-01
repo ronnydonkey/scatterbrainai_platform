@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, Suspense } from 'react'
 import { AuthForm } from '@/components/app/Auth/AuthForm'
 import { CreateBrainForm } from '@/components/app/Auth/CreateBrainForm'
 import { OnboardingFlow } from '@/components/app/Onboarding/OnboardingFlow'
@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { useSearchParams } from 'next/navigation'
 
-export default function AppPage() {
+function AppContent() {
   const { user, loading } = useAuth()
   const [profile, setProfile] = useState<{
     id: string
@@ -95,4 +95,16 @@ export default function AppPage() {
   }
 
   return <Dashboard profile={profile} />
+}
+
+export default function AppPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <AppContent />
+    </Suspense>
+  )
 }

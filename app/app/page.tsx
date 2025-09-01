@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { AuthForm } from '@/components/app/Auth/AuthForm'
+import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
 
 export default function AppPage() {
   const [mounted, setMounted] = useState(false)
@@ -21,7 +21,7 @@ export default function AppPage() {
   }
 
   if (!user) {
-    return <AuthForm />
+    return <SimpleAuthForm />
   }
 
   return (

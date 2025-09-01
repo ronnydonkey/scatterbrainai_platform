@@ -195,7 +195,7 @@ export default function ExportPage() {
                   whileHover={{ scale: 1.01 }}
                   whileTap={{ scale: 0.99 }}
                   onClick={() => exportData(format.id)}
-                  disabled={isExporting || loading}
+                  disabled={isExporting}
                   className="bg-white p-6 rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-sm transition-all text-left disabled:opacity-50"
                 >
                   <div className="flex items-start space-x-4">

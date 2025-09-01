@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
-import { Brain, LogOut, Plus, Search, Filter, Download } from 'lucide-react'
+import { Brain, LogOut, Plus, Search, Filter, Download, Settings } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { analyzeContent } from '@/services/claudeService'
@@ -159,6 +159,14 @@ export function Dashboard({ profile }: DashboardProps) {
               >
                 <Download className="w-4 h-4" />
                 <span>Export My Brain</span>
+              </button>
+              
+              <button
+                onClick={() => window.location.href = '/app/settings'}
+                className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Settings</span>
               </button>
               
               <button

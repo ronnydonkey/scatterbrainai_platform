@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { AuthForm } from '@/components/app/Auth/AuthForm'
 
 export default function AppPage() {
   const [mounted, setMounted] = useState(false)
@@ -19,13 +20,17 @@ export default function AppPage() {
     )
   }
 
+  if (!user) {
+    return <AuthForm />
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-2xl font-bold mb-4">ScatterBrainAI App</h1>
-        <p className="text-gray-600">Auth Status: {user ? `Logged in as ${user.email}` : 'Not logged in'}</p>
+        <h1 className="text-2xl font-bold mb-4">Welcome to ScatterBrainAI</h1>
+        <p className="text-gray-600">Logged in as: {user.email}</p>
         <div className="mt-4">
-          <a href="/app/debug" className="text-blue-600 hover:underline">Check Debug Info</a>
+          <p className="text-sm text-gray-500">Dashboard will be loaded here</p>
         </div>
       </div>
     </div>

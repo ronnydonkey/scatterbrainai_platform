@@ -84,7 +84,7 @@ export function SimpleAuthForm() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{' '}
-            <a href="/app?create=true" className="text-blue-600 hover:text-blue-700 font-medium">
+            <a href="/app/create" className="text-blue-600 hover:text-blue-700 font-medium">
               Create Your Brain
             </a>
           </p>

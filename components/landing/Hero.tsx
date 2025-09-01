@@ -34,7 +34,7 @@ export function Hero() {
             whileTap={{ scale: 0.98 }}
           >
             <Link 
-              href="/app?create=true"
+              href="/app/create"
               className="inline-flex items-center bg-blue-600 text-white text-lg px-8 py-4 rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-xl"
             >
               <Brain className="w-6 h-6 mr-2" />

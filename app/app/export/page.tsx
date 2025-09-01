@@ -45,18 +45,24 @@ const exportFormats = [
   }
 ]
 
+interface Thought {
+  id: string
+  title: string
+  content: string
+  source_type: 'text' | 'url'
+  source_data: string
+  analysis: string | null
+  generated_content: string | null
+  tags: string[]
+  created_at: string
+  user_id: string
+}
+
 export default function ExportPage() {
   const { user } = useAuth()
-  const [thoughts, setThoughts] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+  const [thoughts, setThoughts] = useState<Thought[]>([])
   const [exporting, setExporting] = useState<string | null>(null)
   const [completed, setCompleted] = useState<string[]>([])
-
-  useEffect(() => {
-    if (user) {
-      loadThoughts()
-    }
-  }, [user])
 
   const loadThoughts = async () => {
     const { data } = await supabase
@@ -68,12 +74,18 @@ export default function ExportPage() {
     setThoughts(data || [])
   }
 
+  useEffect(() => {
+    if (user) {
+      loadThoughts()
+    }
+  }, [user, loadThoughts])
+
   const exportData = async (format: string) => {
     setExporting(format)
     
     try {
       let content = ''
-      let filename = `scatterbrain-export-${new Date().toISOString().split('T')[0]}`
+      const filename = `scatterbrain-export-${new Date().toISOString().split('T')[0]}`
       
       switch (format) {
         case 'raw_text':
@@ -221,7 +233,7 @@ export default function ExportPage() {
             <ul className="space-y-2 text-sm text-gray-600">
               <li>• All exports include your complete thought history</li>
               <li>• Generated content is included where available</li>
-              <li>• Exports are generated locally - we don't store copies</li>
+              <li>• Exports are generated locally - we don&apos;t store copies</li>
               <li>• You can export as many times as you want</li>
             </ul>
           </div>

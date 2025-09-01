@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { Brain, LogOut, Plus, Search, Filter, Download } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
@@ -26,7 +26,13 @@ interface Thought {
 }
 
 interface DashboardProps {
-  profile: any
+  profile: {
+    id: string
+    brain_name: string
+    onboarding_completed: boolean
+    trial_end_date: string
+    subscription_status: string
+  }
 }
 
 export function Dashboard({ profile }: DashboardProps) {
@@ -37,13 +43,7 @@ export function Dashboard({ profile }: DashboardProps) {
   const [showReport, setShowReport] = useState(false)
   const [selectedThought, setSelectedThought] = useState<Thought | null>(null)
 
-  useEffect(() => {
-    if (user) {
-      loadThoughts()
-    }
-  }, [user])
-
-  const loadThoughts = async () => {
+  const loadThoughts = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('thoughts')
@@ -56,7 +56,13 @@ export function Dashboard({ profile }: DashboardProps) {
     } catch (error) {
       console.error('Error loading thoughts:', error)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user) {
+      loadThoughts()
+    }
+  }, [user, loadThoughts])
 
   const handleAnalyze = async (content: string, type: 'text' | 'url') => {
     if (!user) return

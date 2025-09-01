@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { AuthForm } from '@/components/app/Auth/AuthForm'
 import { CreateBrainForm } from '@/components/app/Auth/CreateBrainForm'
 import { OnboardingFlow } from '@/components/app/Onboarding/OnboardingFlow'
@@ -11,7 +11,13 @@ import { useSearchParams } from 'next/navigation'
 
 export default function AppPage() {
   const { user, loading } = useAuth()
-  const [profile, setProfile] = useState<any>(null)
+  const [profile, setProfile] = useState<{
+    id: string
+    brain_name: string
+    onboarding_completed: boolean
+    trial_end_date: string
+    subscription_status: string
+  } | null>(null)
   const [checkingProfile, setCheckingProfile] = useState(true)
   const [showCreateBrain, setShowCreateBrain] = useState(false)
   const searchParams = useSearchParams()
@@ -23,15 +29,7 @@ export default function AppPage() {
     }
   }, [searchParams])
 
-  useEffect(() => {
-    if (user) {
-      checkUserProfile()
-    } else {
-      setCheckingProfile(false)
-    }
-  }, [user])
-
-  const checkUserProfile = async () => {
+  const checkUserProfile = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -50,7 +48,15 @@ export default function AppPage() {
     } finally {
       setCheckingProfile(false)
     }
-  }
+  }, [user?.id])
+
+  useEffect(() => {
+    if (user) {
+      checkUserProfile()
+    } else {
+      setCheckingProfile(false)
+    }
+  }, [user, checkUserProfile])
 
   const handleOnboardingComplete = async () => {
     await supabase

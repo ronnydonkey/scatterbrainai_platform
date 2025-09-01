@@ -95,7 +95,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       >
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-gray-900">Let's Learn Your Voice</h2>
+            <h2 className="text-2xl font-bold text-gray-900">Let&apos;s Learn Your Voice</h2>
             <span className="text-sm text-gray-500">
               {currentStep + 1} of {writingPrompts.length}
             </span>

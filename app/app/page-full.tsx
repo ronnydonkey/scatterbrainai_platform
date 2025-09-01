@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
-import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
+import { AuthForm } from '@/components/app/Auth/AuthForm'
 import { CreateBrainForm } from '@/components/app/Auth/CreateBrainForm'
 import { OnboardingFlow } from '@/components/app/Onboarding/OnboardingFlow'
 import { Dashboard } from '@/components/app/Dashboard/Dashboard'
@@ -20,37 +20,37 @@ function AppContent() {
   } | null>(null)
   const [checkingProfile, setCheckingProfile] = useState(true)
   const [showCreateBrain, setShowCreateBrain] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const searchParams = useSearchParams()
+  
+  // Ensure we're on the client
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   // Check if user came from landing page CTA
   useEffect(() => {
-    if (searchParams?.get('create') === 'true') {
+    if (isClient && searchParams?.get('create') === 'true') {
       setShowCreateBrain(true)
     }
-  }, [searchParams])
+  }, [searchParams, isClient])
 
   const checkUserProfile = useCallback(async () => {
-    if (!user?.id) {
-      setCheckingProfile(false)
-      return
-    }
-
     try {
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', user?.id)
         .single()
 
       if (error) {
         console.error('Error checking profile:', error)
-        setProfile(null)
-      } else {
-        setProfile(data)
+        return
       }
+
+      setProfile(data)
     } catch (error) {
       console.error('Error:', error)
-      setProfile(null)
     } finally {
       setCheckingProfile(false)
     }
@@ -65,12 +65,10 @@ function AppContent() {
   }, [user, checkUserProfile])
 
   const handleOnboardingComplete = async () => {
-    if (!user?.id) return
-    
     await supabase
       .from('profiles')
       .update({ onboarding_completed: true })
-      .eq('id', user.id)
+      .eq('id', user?.id)
     
     checkUserProfile()
   }
@@ -91,7 +89,7 @@ function AppContent() {
     if (showCreateBrain) {
       return <CreateBrainForm onSuccess={() => window.location.reload()} />
     }
-    return <SimpleAuthForm />
+    return <AuthForm />
   }
 
   if (!profile) {

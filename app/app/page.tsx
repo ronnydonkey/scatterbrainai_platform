@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from 'react'
 import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
-import { CreateBrainForm } from '@/components/app/Auth/CreateBrainForm'
+import { SimpleCreateBrainForm } from '@/components/app/Auth/SimpleCreateBrainForm'
 import { OnboardingFlow } from '@/components/app/Onboarding/OnboardingFlow'
 import { Dashboard } from '@/components/app/Dashboard/Dashboard'
 import { useAuth } from '@/hooks/useAuth'
@@ -89,13 +89,13 @@ function AppContent() {
 
   if (!user) {
     if (showCreateBrain) {
-      return <CreateBrainForm onSuccess={() => window.location.reload()} />
+      return <SimpleCreateBrainForm onSuccess={() => window.location.reload()} />
     }
     return <SimpleAuthForm />
   }
 
   if (!profile) {
-    return <CreateBrainForm onSuccess={handleCreateBrainSuccess} />
+    return <SimpleCreateBrainForm onSuccess={handleCreateBrainSuccess} />
   }
 
   if (!profile.onboarding_completed) {

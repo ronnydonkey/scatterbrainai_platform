@@ -1,83 +1,15 @@
 'use client'
 
-import { useEffect, useState, useCallback, Suspense } from 'react'
-import { AuthForm } from '@/components/app/Auth/AuthForm'
-import { CreateBrainForm } from '@/components/app/Auth/CreateBrainForm'
-import { OnboardingFlow } from '@/components/app/Onboarding/OnboardingFlow'
-import { Dashboard } from '@/components/app/Dashboard/Dashboard'
-import { useAuth } from '@/hooks/useAuth'
-import { supabase } from '@/lib/supabase'
-import { useSearchParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 
-function AppContent() {
-  const { user, loading } = useAuth()
-  const [profile, setProfile] = useState<{
-    id: string
-    brain_name: string
-    onboarding_completed: boolean
-    trial_end_date: string
-    subscription_status: string
-  } | null>(null)
-  const [checkingProfile, setCheckingProfile] = useState(true)
-  const [showCreateBrain, setShowCreateBrain] = useState(false)
-  const [isClient, setIsClient] = useState(false)
-  const searchParams = useSearchParams()
-  
-  // Ensure we're on the client
+export default function AppPage() {
+  const [mounted, setMounted] = useState(false)
+
   useEffect(() => {
-    setIsClient(true)
+    setMounted(true)
   }, [])
-  
-  // Check if user came from landing page CTA
-  useEffect(() => {
-    if (isClient && searchParams?.get('create') === 'true') {
-      setShowCreateBrain(true)
-    }
-  }, [searchParams, isClient])
 
-  const checkUserProfile = useCallback(async () => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user?.id)
-        .single()
-
-      if (error) {
-        console.error('Error checking profile:', error)
-        return
-      }
-
-      setProfile(data)
-    } catch (error) {
-      console.error('Error:', error)
-    } finally {
-      setCheckingProfile(false)
-    }
-  }, [user?.id])
-
-  useEffect(() => {
-    if (user) {
-      checkUserProfile()
-    } else {
-      setCheckingProfile(false)
-    }
-  }, [user, checkUserProfile])
-
-  const handleOnboardingComplete = async () => {
-    await supabase
-      .from('profiles')
-      .update({ onboarding_completed: true })
-      .eq('id', user?.id)
-    
-    checkUserProfile()
-  }
-
-  const handleCreateBrainSuccess = () => {
-    checkUserProfile()
-  }
-
-  if (loading || checkingProfile) {
+  if (!mounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -85,32 +17,15 @@ function AppContent() {
     )
   }
 
-  if (!user) {
-    if (showCreateBrain) {
-      return <CreateBrainForm onSuccess={() => window.location.reload()} />
-    }
-    return <AuthForm />
-  }
-
-  if (!profile) {
-    return <CreateBrainForm onSuccess={handleCreateBrainSuccess} />
-  }
-
-  if (!profile.onboarding_completed) {
-    return <OnboardingFlow onComplete={handleOnboardingComplete} />
-  }
-
-  return <Dashboard profile={profile} />
-}
-
-export default function AppPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-lg shadow-lg">
+        <h1 className="text-2xl font-bold mb-4">ScatterBrainAI App</h1>
+        <p className="text-gray-600">The app is loading... If you see this, the basic page works!</p>
+        <div className="mt-4">
+          <a href="/app/debug" className="text-blue-600 hover:underline">Check Debug Info</a>
+        </div>
       </div>
-    }>
-      <AppContent />
-    </Suspense>
+    </div>
   )
 }

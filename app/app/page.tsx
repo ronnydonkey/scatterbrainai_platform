@@ -20,14 +20,20 @@ function AppContent() {
   } | null>(null)
   const [checkingProfile, setCheckingProfile] = useState(true)
   const [showCreateBrain, setShowCreateBrain] = useState(false)
+  const [isClient, setIsClient] = useState(false)
   const searchParams = useSearchParams()
+  
+  // Ensure we're on the client
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
   
   // Check if user came from landing page CTA
   useEffect(() => {
-    if (searchParams.get('create') === 'true') {
+    if (isClient && searchParams?.get('create') === 'true') {
       setShowCreateBrain(true)
     }
-  }, [searchParams])
+  }, [searchParams, isClient])
 
   const checkUserProfile = useCallback(async () => {
     try {

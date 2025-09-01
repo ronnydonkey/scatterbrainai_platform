@@ -1,15 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function AppPage() {
   const [mounted, setMounted] = useState(false)
+  const { user, loading } = useAuth()
 
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted) {
+  if (!mounted || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
@@ -21,7 +23,7 @@ export default function AppPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
       <div className="bg-white p-8 rounded-lg shadow-lg">
         <h1 className="text-2xl font-bold mb-4">ScatterBrainAI App</h1>
-        <p className="text-gray-600">The app is loading... If you see this, the basic page works!</p>
+        <p className="text-gray-600">Auth Status: {user ? `Logged in as ${user.email}` : 'Not logged in'}</p>
         <div className="mt-4">
           <a href="/app/debug" className="text-blue-600 hover:underline">Check Debug Info</a>
         </div>

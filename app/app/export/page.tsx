@@ -95,8 +95,9 @@ export default function ExportPage() {
           break
           
         case 'organized_clusters':
-          const themes = [...new Set(thoughts.flatMap(t => t.tags || []))]
-          content = themes.map(theme => {
+          const allTags = thoughts.flatMap(t => t.tags || [])
+          const uniqueTags = allTags.filter((tag, index) => allTags.indexOf(tag) === index)
+          content = uniqueTags.map(theme => {
             const themed = thoughts.filter(t => t.tags?.includes(theme))
             return `## ${theme}\n\n${themed.map(t => `- ${t.title}\n  ${t.content}`).join('\n\n')}`
           }).join('\n\n---\n\n')

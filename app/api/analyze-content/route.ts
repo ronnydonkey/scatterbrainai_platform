@@ -113,10 +113,10 @@ export async function POST(request: NextRequest) {
           key_themes: analysis.tags,
           connections: analysis.connections,
           content_suggestions: analysis.content_suggestions || {
-            twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
-            reddit: `Just had this thought: ${content.slice(0, 200)}...\n\nWhat do you all think?`,
-            linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
-            youtube: `Today we're discussing: ${content.slice(0, 100)}...`
+            twitter: `1/ 🧠 New insight on ${analysis.tags[0]}: ${content.slice(0, 200)}...\n\n2/ This connects to broader patterns in ${analysis.tags.join(', ')}.\n\n3/ What are your thoughts on this? Let's discuss below 👇\n\n#${analysis.tags.join(' #')}`,
+            reddit: `Just discovered something fascinating about ${analysis.tags[0]}\n\n${content.slice(0, 400)}...\n\nThis got me thinking about the broader implications. What's your take on this? Have you noticed similar patterns?\n\nWould love to hear different perspectives from the community.`,
+            linkedin: `Exploring the intersection of ${analysis.tags.join(' and ')}:\n\n${content.slice(0, 300)}...\n\nThis insight has significant implications for how we approach our work. What resonates with you?\n\n#${analysis.tags.join(' #')}`,
+            youtube: `Title: "Understanding ${analysis.tags[0]}: Key Insights and Analysis"\n\nDescription: In this video, we explore ${content.slice(0, 200)}... Join us for a deep dive into ${analysis.tags.join(', ')} and their practical applications.`
           }
         }
 
@@ -174,6 +174,13 @@ async function analyzeWithClaude(content: string, sourceType: string) {
 
   const prompt = `You are an expert content strategist and researcher. Analyze this ${sourceType === 'url' ? 'article/web content' : 'thought/idea'} with exceptional depth and insight.
 
+CRITICAL: Analyze the ACTUAL CONTENT below. Do not default to generic topics:
+- If it's about recovery/addiction, analyze recovery themes
+- If it's about creativity/creative blocks, analyze creativity themes  
+- If it's about mental health, analyze mental health themes
+- If it's about personal growth, analyze personal growth themes
+- Extract and analyze the REAL subject matter
+
 Content to analyze:
 ${content}
 
@@ -198,28 +205,41 @@ Provide a comprehensive analysis that includes:
 
 5. **Platform-Optimized Content**: Create compelling, high-value content for each platform:
    
-   **Twitter/X**: Craft a thought-provoking thread (2-3 tweets) that:
-   - Opens with a compelling hook
-   - Provides genuine insight or a fresh perspective
-   - Includes relevant hashtags and a call-to-action
+   **Twitter/X Thread** (5-8 tweets): Create a FULL THREAD with proper flow:
+   1/ Hook tweet with counterintuitive insight or surprising fact
+   2/ Context and evidence that builds on the hook
+   3/ Key research finding or expert perspective
+   4/ Real-world example or case study
+   5/ Another crucial insight or implication
+   6/ What this means practically
+   7/ Future implications or trends
+   8/ Summary with 3-4 relevant hashtags
    
-   **Reddit**: Write an engaging discussion starter that:
-   - Poses thoughtful questions to the community
-   - Shares unique insights or experiences
-   - Invites meaningful dialogue
-   - Fits the culture of relevant subreddits
+   **LinkedIn Post** (250-300 words): Professional thought leadership:
+   - Compelling opening line
+   - Personal anecdote or observation
+   - 3-4 key insights with specific examples
+   - Business implications clearly explained
+   - Actionable takeaways
+   - Engagement question
+   - Professional hashtags
    
-   **LinkedIn**: Compose a professional thought leadership post that:
-   - Demonstrates expertise and insight
-   - Provides actionable value to professionals
-   - Includes a compelling narrative or case study
-   - Ends with a thoughtful question or call-to-action
+   **Reddit Post** (350-500 words): Community discussion starter:
+   - Intriguing title
+   - Context paragraph
+   - Main insight with detailed explanation
+   - 3-4 supporting points with evidence
+   - Acknowledge potential counterarguments
+   - Multiple discussion questions
+   - TL;DR summary
    
-   **YouTube**: Outline a compelling video script structure:
-   - Attention-grabbing intro (first 15 seconds)
-   - 3-5 key points with supporting evidence
-   - Engaging examples or demonstrations
-   - Strong conclusion with next steps
+   **YouTube Script**: Complete video outline:
+   - SEO-optimized title
+   - 100+ word description with timestamps
+   - Hook script (15-30 seconds)
+   - 3-5 main sections with talking points
+   - Specific examples and demonstrations
+   - Call-to-action conclusion
 
 Return your analysis in this JSON format:
 {
@@ -239,19 +259,19 @@ Return your analysis in this JSON format:
     "Experiment or investigation to conduct"
   ],
   "content_suggestions": {
-    "x_twitter": "Thread with multiple tweets, hooks, insights, and hashtags",
-    "reddit": "Engaging discussion starter with questions and unique perspective",
-    "linkedin": "Professional thought leadership post with narrative and value",
-    "youtube_script": "Detailed video outline with timestamps and key points"
+    "x_twitter": "Full Twitter thread with 5-8 numbered tweets, each with compelling content",
+    "reddit": "Complete 350-500 word discussion post with title, body, questions, and TL;DR",
+    "linkedin": "Professional 250-300 word post with insights, examples, and engagement hook",
+    "youtube_script": "Full video outline: title, 100+ word description, hook script, main points, CTA"
   }
 }`
 
   try {
     const response = await anthropic.messages.create({
       model: 'claude-3-opus-20240229',
-      max_tokens: 4000,
+      max_tokens: 6000,
       temperature: 0.8,
-      system: "You are an elite content strategist and researcher who produces exceptionally high-quality, nuanced analysis. Your insights should be specific, actionable, and demonstrate deep understanding. Avoid generic observations and surface-level analysis.",
+      system: "You are an elite content strategist and researcher. CRITICAL: Analyze the EXACT content provided - if it's about recovery, analyze recovery themes; if about creativity, analyze creativity; if about mental health, analyze those themes. NEVER default to generic productivity topics unless that's what the content is actually about. Your insights should be specific to the actual subject matter.",
       messages: [{
         role: 'user',
         content: prompt

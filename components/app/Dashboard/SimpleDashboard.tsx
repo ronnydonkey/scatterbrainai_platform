@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { SimpleInputArea } from './SimpleInputArea'
 import { SimpleThoughtCard } from './SimpleThoughtCard'
-import { SimpleAnalysisReport } from './SimpleAnalysisReport'
+import { CleanAnalysisReport } from './CleanAnalysisReport'
 import { AnalysisProgress } from './AnalysisProgress'
 import { TrialCountdown } from '../TrialCountdown'
 import { SimpleVoiceDiscoveryWizard } from '@/components/voice/SimpleVoiceDiscoveryWizard'
@@ -391,7 +391,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
       <AnalysisProgress isOpen={loading} />
       
       {showReport && selectedThought && (
-        <SimpleAnalysisReport 
+        <CleanAnalysisReport 
           thought={selectedThought} 
           onClose={() => {
             setShowReport(false)

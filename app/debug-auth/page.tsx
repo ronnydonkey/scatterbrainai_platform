@@ -9,8 +9,8 @@ export default function DebugAuthPage() {
   const [session, setSession] = useState<any>(null)
   
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
+    supabase.auth.getSession().then((response: any) => {
+      setSession(response.data.session)
     })
   }, [])
   

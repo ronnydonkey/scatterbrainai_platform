@@ -19,8 +19,8 @@ export default function AppPage() {
         .select('*')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => {
-          setProfile(data)
+        .then((response: any) => {
+          setProfile(response.data)
           setLoading(false)
         })
     } else {

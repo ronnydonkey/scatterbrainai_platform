@@ -18,8 +18,8 @@ export default function DashboardPage() {
         .select('*')
         .eq('id', user.id)
         .single()
-        .then(({ data }) => {
-          setProfile(data)
+        .then((response: any) => {
+          setProfile(response.data)
           setLoading(false)
         })
     } else {

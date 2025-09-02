@@ -1,25 +1,32 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
-import { SimpleCreateBrainForm } from '@/components/app/Auth/SimpleCreateBrainForm'
+import { Dashboard } from '@/components/app/Dashboard/Dashboard'
 
 export default function AppPage() {
-  const [showCreateBrain, setShowCreateBrain] = useState(false)
+  const { user, loading } = useAuth()
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Check URL params on client side
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search)
-      if (urlParams.get('create') === 'true') {
-        setShowCreateBrain(true)
-      }
-    }
+    setMounted(true)
   }, [])
 
-  if (showCreateBrain) {
-    return <SimpleCreateBrainForm onSuccess={() => window.location.reload()} />
+  // Show loading state
+  if (!mounted || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-xl text-gray-600">Loading...</div>
+      </div>
+    )
   }
 
+  // Show dashboard if user is logged in
+  if (user) {
+    return <Dashboard />
+  }
+
+  // Show auth form if not logged in
   return <SimpleAuthForm />
 }

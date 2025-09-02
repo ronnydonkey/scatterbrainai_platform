@@ -194,12 +194,6 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
               Platform-Optimized Content
             </h3>
             
-            {/* Debug info - remove after fixing */}
-            <div className="bg-yellow-50 p-4 rounded-lg mb-4">
-              <p className="text-sm text-yellow-800">Debug Info:</p>
-              <p className="text-xs text-yellow-700">Content keys: {Object.keys(content).join(', ') || 'none'}</p>
-              <p className="text-xs text-yellow-700">Has content: {Object.keys(content).length > 0 ? 'yes' : 'no'}</p>
-            </div>
             
             {/* Twitter/X */}
             {(content.twitter || content.x_twitter) && (

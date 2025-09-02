@@ -23,7 +23,7 @@ export function SimpleAuthForm() {
         setError(error.message)
       } else {
         // Redirect to dashboard on successful login
-        window.location.href = '/app'
+        window.location.href = '/app/dashboard'
       }
     } catch {
       setError('An unexpected error occurred')

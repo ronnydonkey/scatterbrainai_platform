@@ -38,6 +38,8 @@ interface EnhancedContent {
 
 export class EnhancedContentEngine {
   private anthropic: Anthropic;
+  private cache = new Map<string, { data: EnhancedContent; timestamp: number }>();
+  private cacheTimeout = 1000 * 60 * 60; // 1 hour cache
   
   constructor() {
     this.anthropic = new Anthropic({
@@ -45,11 +47,50 @@ export class EnhancedContentEngine {
     });
   }
 
+  private getCacheKey(topic: string, userProfile: UserProfile): string {
+    return `${topic.toLowerCase().trim()}-${JSON.stringify(userProfile)}`;
+  }
+
+  private getFromCache(key: string): EnhancedContent | null {
+    const cached = this.cache.get(key);
+    if (cached) {
+      const now = Date.now();
+      if (now - cached.timestamp < this.cacheTimeout) {
+        console.log('🎯 Returning cached result for:', key);
+        return cached.data;
+      } else {
+        // Remove expired cache
+        this.cache.delete(key);
+      }
+    }
+    return null;
+  }
+
+  private setCache(key: string, data: EnhancedContent): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+    
+    // Limit cache size to prevent memory issues
+    if (this.cache.size > 100) {
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+  }
+
   async generatePremiumContent(
     topic: string, 
     userProfile: UserProfile
   ): Promise<EnhancedContent> {
     console.log(`🧠 Starting premium content generation for: ${topic}`);
+    
+    // Check cache first
+    const cacheKey = this.getCacheKey(topic, userProfile);
+    const cachedResult = this.getFromCache(cacheKey);
+    if (cachedResult) {
+      return cachedResult;
+    }
     
     // Step 1: Deep Research Phase
     const research = await this.conductDeepResearch(topic);
@@ -60,11 +101,16 @@ export class EnhancedContentEngine {
     // Step 3: Add Exploration Paths
     const explorationPaths = await this.generateExplorationPaths(topic, research);
     
-    return {
+    const result = {
       content,
       explorationPaths,
       researchContext: research
     };
+    
+    // Cache the result
+    this.setCache(cacheKey, result);
+    
+    return result;
   }
 
   private async conductDeepResearch(topic: string): Promise<ResearchResults> {

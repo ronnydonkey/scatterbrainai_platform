@@ -69,13 +69,20 @@ export function Dashboard({ profile }: DashboardProps) {
     
     setLoading(true)
     try {
+      // Get the session token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        console.error('No session found')
+        return
+      }
+
       let analysisContent = content
       
       if (type === 'url') {
         analysisContent = await extractUrlContent(content)
       }
 
-      const analysis = await analyzeContent(analysisContent, type)
+      const analysis = await analyzeContent(analysisContent, type, session.access_token)
       
       // Get user's writing style for personalized content
       await supabase

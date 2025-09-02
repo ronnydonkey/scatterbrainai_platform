@@ -9,26 +9,30 @@ if (typeof window !== 'undefined') {
   console.log('Has Supabase Key:', !!supabaseAnonKey)
 }
 
+// Create a dummy client for when env vars are not set
+const dummyClient = {
+  auth: {
+    signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
+    signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+    signOut: async () => ({ error: new Error('Supabase not configured') }),
+    getSession: async () => ({ data: null, error: new Error('Supabase not configured') }),
+    onAuthStateChange: () => ({ data: null, unsubscribe: () => {} }),
+  },
+  from: () => ({
+    select: () => ({ data: null, error: new Error('Supabase not configured') }),
+    insert: () => ({ data: null, error: new Error('Supabase not configured') }),
+    update: () => ({ eq: () => ({ data: null, error: new Error('Supabase not configured') }) }),
+    delete: () => ({ eq: () => ({ data: null, error: new Error('Supabase not configured') }) }),
+  }),
+} as any
+
+// Export the appropriate client
+export const supabase = (!supabaseUrl || !supabaseAnonKey) 
+  ? dummyClient
+  : createClient(supabaseUrl, supabaseAnonKey)
+
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Supabase environment variables not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
-  // Create a dummy client that won't crash
-  export const supabase = {
-    auth: {
-      signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
-      signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
-      signOut: async () => ({ error: new Error('Supabase not configured') }),
-      getSession: async () => ({ data: null, error: new Error('Supabase not configured') }),
-      onAuthStateChange: () => ({ data: null, unsubscribe: () => {} }),
-    },
-    from: () => ({
-      select: () => ({ data: null, error: new Error('Supabase not configured') }),
-      insert: () => ({ data: null, error: new Error('Supabase not configured') }),
-      update: () => ({ eq: () => ({ data: null, error: new Error('Supabase not configured') }) }),
-      delete: () => ({ eq: () => ({ data: null, error: new Error('Supabase not configured') }) }),
-    }),
-  } as any
-} else {
-  export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 }
 
 export type Database = {

@@ -1,13 +1,35 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.warn('Supabase environment variables not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in your .env.local file.')
+// Debug logging
+if (typeof window !== 'undefined') {
+  console.log('Supabase URL:', supabaseUrl || 'NOT SET')
+  console.log('Has Supabase Key:', !!supabaseAnonKey)
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase environment variables not configured. Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  // Create a dummy client that won't crash
+  export const supabase = {
+    auth: {
+      signUp: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      signInWithPassword: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      signOut: async () => ({ error: new Error('Supabase not configured') }),
+      getSession: async () => ({ data: null, error: new Error('Supabase not configured') }),
+      onAuthStateChange: () => ({ data: null, unsubscribe: () => {} }),
+    },
+    from: () => ({
+      select: () => ({ data: null, error: new Error('Supabase not configured') }),
+      insert: () => ({ data: null, error: new Error('Supabase not configured') }),
+      update: () => ({ eq: () => ({ data: null, error: new Error('Supabase not configured') }) }),
+      delete: () => ({ eq: () => ({ data: null, error: new Error('Supabase not configured') }) }),
+    }),
+  } as any
+} else {
+  export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+}
 
 export type Database = {
   public: {

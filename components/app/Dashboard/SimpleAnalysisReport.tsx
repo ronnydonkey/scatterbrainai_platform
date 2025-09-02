@@ -67,12 +67,26 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
 
   // Safely parse analysis content
   const analysis = thought.analysis || {}
+  
+  // Parse generated_content if it's a string
+  let parsedGeneratedContent = thought.generated_content
+  if (typeof thought.generated_content === 'string') {
+    try {
+      parsedGeneratedContent = JSON.parse(thought.generated_content)
+      console.log('Parsed generated_content from string:', parsedGeneratedContent)
+    } catch (e) {
+      console.error('Failed to parse generated_content:', e)
+      parsedGeneratedContent = {}
+    }
+  }
+  
   // Content can be in generated_content (for compatibility) or analysis.content_suggestions
-  const content = thought.generated_content || analysis.content_suggestions || {}
+  const content = parsedGeneratedContent || analysis.content_suggestions || {}
   const explorationPaths = analysis.exploration_paths || analysis.explorationPaths || {}
   const voiceMetadata = analysis.voiceMetadata || {}
   
   console.log('Content to display:', content)
+  console.log('Content type:', typeof content)
   console.log('Content keys:', Object.keys(content))
   console.log('Content values:', Object.values(content))
 

@@ -75,7 +75,9 @@ export class EnhancedContentEngine {
     // Limit cache size to prevent memory issues
     if (this.cache.size > 100) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
     }
   }
 

@@ -19,6 +19,7 @@ export async function analyzeContent(content: string, sourceType: 'text' | 'url'
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer mock-token' // Add auth header
       },
       body: JSON.stringify({
         content,
@@ -62,6 +63,7 @@ Create engaging, platform-appropriate content that matches the user's voice and 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer mock-token' // Add auth header
       },
       body: JSON.stringify({
         content: prompt,

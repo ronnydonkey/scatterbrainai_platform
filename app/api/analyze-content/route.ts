@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import Anthropic from '@anthropic-ai/sdk'
+import { EnhancedContentEngine } from '@/lib/content-engine/enhanced-content-service'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -23,23 +24,76 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Use Claude API if available, otherwise fall back to mock
-    const analysis = anthropic 
-      ? await analyzeWithClaude(content, sourceType)
-      : generateMockAnalysis(content, sourceType)
-
-    return NextResponse.json({
-      analysis: analysis.summary,
-      research_suggestions: analysis.insights,
-      key_themes: analysis.tags,
-      connections: analysis.connections,
-      content_suggestions: {
-        x_twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
-        reddit: `Just had this thought: ${content.slice(0, 200)}...\n\nWhat do you all think?`,
-        linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
-        youtube_script: `Today we're discussing: ${content.slice(0, 100)}...`
+    // Use enhanced content engine if API key available
+    if (anthropicApiKey) {
+      try {
+        const engine = new EnhancedContentEngine()
+        
+        // Default user profile - in production, this would come from the user's settings
+        const userProfile = {
+          voice: 'insightful and engaging',
+          expertise: ['technology', 'innovation', 'research'],
+          preferences: {
+            tone: 'professional yet accessible',
+            sophistication: 'professional' as const,
+            includeExploration: true
+          }
+        }
+        
+        const enhancedResult = await engine.generatePremiumContent(content, userProfile)
+        
+        return NextResponse.json({
+          analysis: enhancedResult.researchContext.domain + ': ' + enhancedResult.researchContext.keyDimensions.join(', '),
+          research_suggestions: enhancedResult.explorationPaths.practicalApplications.concat(
+            enhancedResult.explorationPaths.relatedTopics
+          ),
+          key_themes: enhancedResult.researchContext.keyDimensions,
+          connections: enhancedResult.researchContext.crossDisciplinaryConnections,
+          content_suggestions: {
+            x_twitter: enhancedResult.content.twitter,
+            reddit: enhancedResult.content.reddit,
+            linkedin: enhancedResult.content.linkedin,
+            youtube_script: enhancedResult.content.youtube
+          },
+          // Additional premium data
+          counterintuitive_findings: enhancedResult.researchContext.counterintuitiveFindings,
+          expert_perspectives: enhancedResult.researchContext.expertPerspectives,
+          authority_figures: enhancedResult.researchContext.authorityFigures,
+          exploration_paths: enhancedResult.explorationPaths
+        })
+      } catch (error) {
+        console.error('Enhanced content engine error:', error)
+        // Fall back to basic Claude analysis
+        const analysis = await analyzeWithClaude(content, sourceType)
+        return NextResponse.json({
+          analysis: analysis.summary,
+          research_suggestions: analysis.insights,
+          key_themes: analysis.tags,
+          connections: analysis.connections,
+          content_suggestions: {
+            x_twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
+            reddit: `Just had this thought: ${content.slice(0, 200)}...\n\nWhat do you all think?`,
+            linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
+            youtube_script: `Today we're discussing: ${content.slice(0, 100)}...`
+          }
+        })
       }
-    })
+    } else {
+      // Use mock analysis if no API key
+      const analysis = generateMockAnalysis(content, sourceType)
+      return NextResponse.json({
+        analysis: analysis.summary,
+        research_suggestions: analysis.insights,
+        key_themes: analysis.tags,
+        connections: analysis.connections,
+        content_suggestions: {
+          x_twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
+          reddit: `Just had this thought: ${content.slice(0, 200)}...\n\nWhat do you all think?`,
+          linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
+          youtube_script: `Today we're discussing: ${content.slice(0, 100)}...`
+        }
+      })
+    }
   } catch (error) {
     console.error('Error in analyze-content API:', error)
     return NextResponse.json(

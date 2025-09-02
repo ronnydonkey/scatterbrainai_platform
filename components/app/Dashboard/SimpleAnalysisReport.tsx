@@ -9,6 +9,7 @@ interface SimpleAnalysisReportProps {
     title: string
     content: string
     analysis: any
+    generated_content?: any
     voice_archetype?: string
     authenticity_score?: number
   }
@@ -61,22 +62,27 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
 
   // Safely parse analysis content
   const analysis = thought.analysis || {}
-  const content = analysis.content || {}
-  const explorationPaths = analysis.explorationPaths || {}
+  // Content can be in generated_content (for compatibility) or analysis.content_suggestions
+  const content = thought.generated_content || analysis.content_suggestions || {}
+  const explorationPaths = analysis.exploration_paths || analysis.explorationPaths || {}
   const voiceMetadata = analysis.voiceMetadata || {}
 
   const platformIcons = {
     twitter: Twitter,
+    x_twitter: Twitter,
     linkedin: Linkedin,
     reddit: MessageSquare,
-    youtube: Youtube
+    youtube: Youtube,
+    youtube_script: Youtube
   }
 
   const platformColors = {
     twitter: 'text-blue-500 bg-blue-50',
+    x_twitter: 'text-blue-500 bg-blue-50',
     linkedin: 'text-blue-700 bg-blue-50',
     reddit: 'text-orange-600 bg-orange-50',
-    youtube: 'text-red-600 bg-red-50'
+    youtube: 'text-red-600 bg-red-50',
+    youtube_script: 'text-red-600 bg-red-50'
   }
 
   return (
@@ -179,7 +185,7 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
                         <Icon className="w-5 h-5" />
                       </div>
                       <h4 className="font-medium text-gray-900 capitalize">
-                        {platform}
+                        {platform.replace('x_twitter', 'Twitter/X').replace('youtube_script', 'YouTube').replace('_', ' ')}
                       </h4>
                     </div>
                     <button

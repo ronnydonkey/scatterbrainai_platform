@@ -71,24 +71,31 @@ export async function POST(request: NextRequest) {
         }
 
         // Create thought in database
+        console.log('Creating thought for user:', user.id)
+        const thoughtData = {
+          user_id: user.id,
+          title: enhancedResult.researchContext.keyDimensions[0] || 'New Thought',
+          content: content.slice(0, 500),
+          source_type: sourceType || 'text',
+          source_data: content,
+          analysis: analysisData,
+          generated_content: analysisData.content_suggestions,
+          tags: enhancedResult.researchContext.keyDimensions
+        }
+        console.log('Thought data:', JSON.stringify(thoughtData, null, 2))
+        
         const { data: thought, error: thoughtError } = await supabase
           .from('thoughts')
-          .insert({
-            user_id: user.id,
-            title: enhancedResult.researchContext.keyDimensions[0] || 'New Thought',
-            content: content.slice(0, 500),
-            source_type: sourceType || 'text',
-            source_data: content,
-            analysis: analysisData,
-            generated_content: analysisData.content_suggestions,
-            tags: enhancedResult.researchContext.keyDimensions
-          })
+          .insert(thoughtData)
           .select()
           .single()
 
         if (thoughtError) {
           console.error('Error creating thought:', thoughtError)
-          return NextResponse.json({ error: 'Failed to save thought' }, { status: 500 })
+          return NextResponse.json({ 
+            error: `Failed to save thought: ${thoughtError.message || 'Unknown error'}`,
+            details: thoughtError
+          }, { status: 500 })
         }
 
         return NextResponse.json({
@@ -131,7 +138,10 @@ export async function POST(request: NextRequest) {
 
         if (thoughtError) {
           console.error('Error creating thought:', thoughtError)
-          return NextResponse.json({ error: 'Failed to save thought' }, { status: 500 })
+          return NextResponse.json({ 
+            error: `Failed to save thought: ${thoughtError.message || 'Unknown error'}`,
+            details: thoughtError
+          }, { status: 500 })
         }
 
         return NextResponse.json({

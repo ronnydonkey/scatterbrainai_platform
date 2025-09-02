@@ -11,15 +11,19 @@ export interface AnalysisResult {
   }
 }
 
-export async function analyzeContent(content: string, sourceType: 'text' | 'url', userProfile?: any): Promise<AnalysisResult> {
+export async function analyzeContent(content: string, sourceType: 'text' | 'url', authToken: string, userProfile?: any): Promise<AnalysisResult> {
   console.log('Analyzing content...')
+  
+  if (!authToken) {
+    throw new Error('Authentication token is required')
+  }
   
   try {
     const response = await fetch('/api/analyze-content', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer mock-token' // Add auth header
+        'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify({
         content,
@@ -45,9 +49,14 @@ export async function generatePersonalizedContent(
   content: string, 
   analysis: string, 
   writingStyle: string,
-  platform: string
+  platform: string,
+  authToken: string
 ): Promise<string> {
   console.log('Generating personalized content for platform:', platform)
+  
+  if (!authToken) {
+    throw new Error('Authentication token is required')
+  }
   
   try {
     const prompt = `
@@ -64,7 +73,7 @@ Create engaging, platform-appropriate content that matches the user's voice and 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer mock-token' // Add auth header
+        'Authorization': `Bearer ${authToken}`
       },
       body: JSON.stringify({
         content: prompt,

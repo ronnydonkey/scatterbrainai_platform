@@ -12,7 +12,7 @@ const anthropic = anthropicApiKey ? new Anthropic({ apiKey: anthropicApiKey }) :
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, sourceType, userProfile } = await request.json()
+    const { content, sourceType, userProfile, brainId } = await request.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -22,6 +22,14 @@ export async function POST(request: NextRequest) {
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Verify the token and get user
+    const token = authHeader.replace('Bearer ', '')
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
     // Use enhanced content engine if API key available
@@ -42,7 +50,7 @@ export async function POST(request: NextRequest) {
         
         const enhancedResult = await engine.generatePremiumContent(content, profile)
         
-        return NextResponse.json({
+        const analysisData = {
           analysis: enhancedResult.researchContext.domain + ': ' + enhancedResult.researchContext.keyDimensions.join(', '),
           research_suggestions: enhancedResult.explorationPaths.practicalApplications.concat(
             enhancedResult.explorationPaths.relatedTopics
@@ -60,12 +68,39 @@ export async function POST(request: NextRequest) {
           expert_perspectives: enhancedResult.researchContext.expertPerspectives,
           authority_figures: enhancedResult.researchContext.authorityFigures,
           exploration_paths: enhancedResult.explorationPaths
+        }
+
+        // Create thought in database
+        const { data: thought, error: thoughtError } = await supabase
+          .from('thoughts')
+          .insert({
+            user_id: user.id,
+            title: enhancedResult.researchContext.keyDimensions[0] || 'New Thought',
+            content: content.slice(0, 500),
+            source_type: sourceType || 'text',
+            source_data: content,
+            analysis: analysisData,
+            generated_content: analysisData.content_suggestions,
+            tags: enhancedResult.researchContext.keyDimensions
+          })
+          .select()
+          .single()
+
+        if (thoughtError) {
+          console.error('Error creating thought:', thoughtError)
+          return NextResponse.json({ error: 'Failed to save thought' }, { status: 500 })
+        }
+
+        return NextResponse.json({
+          success: true,
+          thoughtId: thought.id,
+          analysis: analysisData
         })
       } catch (error) {
         console.error('Enhanced content engine error:', error)
         // Fall back to basic Claude analysis
         const analysis = await analyzeWithClaude(content, sourceType)
-        return NextResponse.json({
+        const analysisData = {
           analysis: analysis.summary,
           research_suggestions: analysis.insights,
           key_themes: analysis.tags,
@@ -76,23 +111,41 @@ export async function POST(request: NextRequest) {
             linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
             youtube_script: `Today we're discussing: ${content.slice(0, 100)}...`
           }
+        }
+
+        // Create thought in database
+        const { data: thought, error: thoughtError } = await supabase
+          .from('thoughts')
+          .insert({
+            user_id: user.id,
+            title: analysis.tags[0] || 'New Thought',
+            content: content.slice(0, 500),
+            source_type: sourceType || 'text',
+            source_data: content,
+            analysis: analysisData,
+            generated_content: analysisData.content_suggestions,
+            tags: analysis.tags
+          })
+          .select()
+          .single()
+
+        if (thoughtError) {
+          console.error('Error creating thought:', thoughtError)
+          return NextResponse.json({ error: 'Failed to save thought' }, { status: 500 })
+        }
+
+        return NextResponse.json({
+          success: true,
+          thoughtId: thought.id,
+          analysis: analysisData
         })
       }
     } else {
-      // Use mock analysis if no API key
-      const analysis = generateMockAnalysis(content, sourceType)
-      return NextResponse.json({
-        analysis: analysis.summary,
-        research_suggestions: analysis.insights,
-        key_themes: analysis.tags,
-        connections: analysis.connections,
-        content_suggestions: {
-          x_twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
-          reddit: `Just had this thought: ${content.slice(0, 200)}...\n\nWhat do you all think?`,
-          linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
-          youtube_script: `Today we're discussing: ${content.slice(0, 100)}...`
-        }
-      })
+      // No API key configured
+      return NextResponse.json(
+        { error: 'Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your environment variables.' },
+        { status: 500 }
+      )
     }
   } catch (error) {
     console.error('Error in analyze-content API:', error)
@@ -103,39 +156,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-function generateMockAnalysis(content: string, sourceType: string) {
-  // This is a mock function that simulates Claude's analysis
-  const words = content.toLowerCase().split(' ')
-  
-  const topics = []
-  if (words.some(w => ['ai', 'machine', 'learning', 'artificial', 'intelligence'].includes(w))) {
-    topics.push('AI/ML')
-  }
-  if (words.some(w => ['business', 'startup', 'company', 'product'].includes(w))) {
-    topics.push('Business')
-  }
-  if (words.some(w => ['design', 'user', 'experience', 'interface'].includes(w))) {
-    topics.push('Design')
-  }
-  if (topics.length === 0) {
-    topics.push('General')
-  }
-
-  return {
-    summary: `This ${sourceType === 'url' ? 'article' : 'thought'} discusses ${topics.join(' and ')} concepts. The content provides insights into ${content.slice(0, 50)}...`,
-    tags: topics,
-    connections: [
-      `Related to ${topics[0]} trends`,
-      'Could be expanded into a blog post',
-      'Contains actionable insights'
-    ],
-    insights: [
-      'Key takeaway: ' + content.slice(0, 100) + '...',
-      'Consider exploring this topic further',
-      'This could be valuable for your audience'
-    ]
-  }
-}
 
 async function analyzeWithClaude(content: string, sourceType: string) {
   if (!anthropic) {

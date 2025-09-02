@@ -131,12 +131,22 @@ export function SimpleDashboard({ profile }: DashboardProps) {
     
     setLoading(true)
     try {
+      // Get the session token
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        console.error('No session found')
+        return
+      }
+
       // Use voice-aware analysis if voice profile exists
       const endpoint = voiceProfile ? '/api/voice-analyze-content' : '/api/analyze-content'
       
       const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
         body: JSON.stringify({ content, brainId: profile.id })
       })
 
@@ -289,7 +299,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder="Search your thoughts..."
-                      className="border-0 focus:ring-0 text-gray-900 placeholder-gray-500 w-64 outline-none"
+                      className="border-0 focus:ring-0 text-gray-900 placeholder-gray-500 w-64 outline-none bg-transparent"
                     />
                   </div>
                 </div>

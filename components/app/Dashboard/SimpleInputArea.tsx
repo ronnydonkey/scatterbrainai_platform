@@ -55,7 +55,7 @@ export function SimpleInputArea({ onSubmit, loading }: SimpleInputAreaProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Enter your thoughts, ideas, or paste any content..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-32 outline-none"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none h-32 outline-none text-gray-900 placeholder-gray-500"
             disabled={loading}
           />
         ) : (
@@ -64,7 +64,7 @@ export function SimpleInputArea({ onSubmit, loading }: SimpleInputAreaProps) {
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Enter a URL to analyze..."
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-gray-900 placeholder-gray-500"
             disabled={loading}
           />
         )}

@@ -71,6 +71,10 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
   const content = thought.generated_content || analysis.content_suggestions || {}
   const explorationPaths = analysis.exploration_paths || analysis.explorationPaths || {}
   const voiceMetadata = analysis.voiceMetadata || {}
+  
+  console.log('Content to display:', content)
+  console.log('Content keys:', Object.keys(content))
+  console.log('Content values:', Object.values(content))
 
   const platformIcons: Record<string, any> = {
     twitter: Twitter,
@@ -176,13 +180,18 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
               Platform-Optimized Content
             </h3>
             
-            {Object.entries(content).map(([platform, text]) => {
-              const Icon = platformIcons[platform as keyof typeof platformIcons]
-              const colorClass = platformColors[platform as keyof typeof platformColors]
-              
-              if (!Icon || !text) return null
-              
-              return (
+            {Object.entries(content).length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <p>No content generated yet. Please try again.</p>
+              </div>
+            ) : (
+              Object.entries(content).map(([platform, text]) => {
+                const Icon = platformIcons[platform as keyof typeof platformIcons]
+                const colorClass = platformColors[platform as keyof typeof platformColors]
+                
+                if (!Icon || !text) return null
+                
+                return (
                 <div key={platform} className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-2">
@@ -212,7 +221,8 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
                   <p className="text-gray-700 whitespace-pre-wrap">{String(text)}</p>
                 </div>
               )
-            })}
+            })
+          )}
           </div>
 
           {/* Exploration Paths */}

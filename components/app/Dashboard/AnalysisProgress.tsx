@@ -8,10 +8,10 @@ interface AnalysisProgressProps {
 }
 
 const steps = [
-  { id: 1, name: 'Understanding your content', icon: Brain, duration: 2000 },
-  { id: 2, name: 'Researching key concepts', icon: Search, duration: 3000 },
-  { id: 3, name: 'Generating insights', icon: Sparkles, duration: 3000 },
-  { id: 4, name: 'Creating platform content', icon: CheckCircle, duration: 2000 }
+  { id: 1, name: 'Understanding your content', icon: Brain, duration: 3000 },
+  { id: 2, name: 'Researching key concepts', icon: Search, duration: 8000 },
+  { id: 3, name: 'Generating insights', icon: Sparkles, duration: 10000 },
+  { id: 4, name: 'Creating platform content', icon: CheckCircle, duration: 9000 }
 ]
 
 export function AnalysisProgress({ isOpen }: AnalysisProgressProps) {
@@ -80,7 +80,7 @@ export function AnalysisProgress({ isOpen }: AnalysisProgressProps) {
           {/* Header */}
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Analyzing Your Content</h3>
-            <p className="text-gray-600">This usually takes 10-15 seconds</p>
+            <p className="text-gray-600">This usually takes 25-35 seconds</p>
           </div>
 
           {/* Progress Bar */}

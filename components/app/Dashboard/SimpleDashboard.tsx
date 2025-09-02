@@ -135,12 +135,15 @@ export function SimpleDashboard({ profile }: DashboardProps) {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         console.error('No session found')
+        alert('Authentication error: Please sign in again.')
+        setLoading(false)
         return
       }
 
       // Use voice-aware analysis if voice profile exists
       const endpoint = voiceProfile ? '/api/voice-analyze-content' : '/api/analyze-content'
       
+      console.log('Calling API endpoint:', endpoint)
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 
@@ -150,17 +153,34 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         body: JSON.stringify({ content, brainId: profile.id })
       })
 
+      console.log('API response status:', response.status)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        console.error('API error:', errorData)
+        alert(`Error: ${errorData.error || 'Failed to analyze content'}`)
+        setLoading(false)
+        return
+      }
+
       const result = await response.json()
+      console.log('API result:', result)
       
       if (result.success) {
         await loadThoughts()
         
         // Get the newly created thought
-        const { data: newThought } = await supabase
+        const { data: newThought, error: thoughtError } = await supabase
           .from('thoughts')
           .select('*')
           .eq('id', result.thoughtId)
           .single()
+        
+        if (thoughtError) {
+          console.error('Error fetching new thought:', thoughtError)
+          alert('Error: Could not load the analysis results')
+          return
+        }
         
         if (newThought) {
           setSelectedThought(newThought)
@@ -168,12 +188,15 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         }
         
         // Check if user needs voice onboarding
-        if (result.analysis.needsVoiceOnboarding) {
+        if (result.analysis && result.analysis.needsVoiceOnboarding) {
           setShowVoiceDiscovery(true)
         }
+      } else {
+        alert('Error: Analysis failed. Please try again.')
       }
     } catch (error) {
       console.error('Error analyzing content:', error)
+      alert(`Error: ${error instanceof Error ? error.message : 'Failed to analyze content'}`)
     } finally {
       setLoading(false)
     }

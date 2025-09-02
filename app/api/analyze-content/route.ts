@@ -5,7 +5,7 @@ import { EnhancedContentEngine } from '@/lib/content-engine/enhanced-content-ser
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const anthropicApiKey = process.env.ANTHROPIC_API_KEY
+const anthropicApiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const anthropic = anthropicApiKey ? new Anthropic({ apiKey: anthropicApiKey }) : null

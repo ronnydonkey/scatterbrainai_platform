@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
-import { Dashboard } from '@/components/app/Dashboard/Dashboard'
+import { SimpleDashboard } from '@/components/app/Dashboard/SimpleDashboard'
 import { supabase } from '@/lib/supabase'
 
 export default function AppPage() {
@@ -38,7 +38,7 @@ export default function AppPage() {
 
   // Show dashboard if user is logged in and has profile
   if (user && profile) {
-    return <Dashboard profile={profile} />
+    return <SimpleDashboard profile={profile} />
   }
 
   // Show auth form if not logged in

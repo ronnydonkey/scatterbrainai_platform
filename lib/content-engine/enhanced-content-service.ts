@@ -87,21 +87,24 @@ export class EnhancedContentEngine {
   ): Promise<EnhancedContent> {
     console.log(`🧠 Starting premium content generation for: ${topic}`);
     
+    // Extract the core topic/insight from long content
+    const coreTopic = await this.extractCoreTopic(topic);
+    
     // Check cache first
-    const cacheKey = this.getCacheKey(topic, userProfile);
+    const cacheKey = this.getCacheKey(coreTopic, userProfile);
     const cachedResult = this.getFromCache(cacheKey);
     if (cachedResult) {
       return cachedResult;
     }
     
     // Step 1: Deep Research Phase
-    const research = await this.conductDeepResearch(topic);
+    const research = await this.conductDeepResearch(coreTopic);
     
     // Step 2: Content Generation with Research Context
-    const content = await this.createSophisticatedContent(topic, research, userProfile);
+    const content = await this.createSophisticatedContent(coreTopic, research, userProfile);
     
     // Step 3: Add Exploration Paths
-    const explorationPaths = await this.generateExplorationPaths(topic, research);
+    const explorationPaths = await this.generateExplorationPaths(coreTopic, research);
     
     const result = {
       content,
@@ -113,6 +116,32 @@ export class EnhancedContentEngine {
     this.setCache(cacheKey, result);
     
     return result;
+  }
+
+  private async extractCoreTopic(content: string): Promise<string> {
+    // If content is very long (like a full article), extract the key topic
+    if (content.length > 500) {
+      try {
+        const response = await this.anthropic.messages.create({
+          model: 'claude-3-haiku-20240307', // Use faster model for extraction
+          max_tokens: 100,
+          messages: [{
+            role: 'user',
+            content: `Extract the main topic or key insight from this content in 10 words or less. Focus on the core concept, not the full article text:\n\n${content.slice(0, 1000)}...`
+          }]
+        });
+        
+        const extracted = response.content[0].type === 'text' ? response.content[0].text : content.slice(0, 100);
+        console.log(`📋 Extracted core topic: ${extracted}`);
+        return extracted.trim();
+      } catch (error) {
+        console.error('Topic extraction error:', error);
+        // Fallback: use first 100 chars
+        return content.slice(0, 100).trim() + '...';
+      }
+    }
+    
+    return content;
   }
 
   private async conductDeepResearch(topic: string): Promise<ResearchResults> {
@@ -214,37 +243,47 @@ export class EnhancedContentEngine {
       - Tone: ${userProfile.preferences.tone}
       - Sophistication Level: ${userProfile.preferences.sophistication}
       
+      CRITICAL RULES:
+      1. NEVER copy or paraphrase the original content/article text
+      2. Create COMPLETELY ORIGINAL insights and perspectives
+      3. Focus on implications, connections, and deeper meaning
+      4. Add YOUR OWN analysis, not just summarize
+      5. Each platform needs DIFFERENT content, not variations of the same text
+      
       CONTENT REQUIREMENTS:
-      Each piece should feel like a mini-masterclass that demonstrates deep understanding.
-      Lead with non-obvious insights that would make domain experts nod in recognition.
-      Include specific evidence, examples, or references from the research context.
-      Connect to broader principles or implications.
-      Maintain the user's voice while elevating intellectual sophistication.
+      Each piece should demonstrate original thinking and analysis.
+      Lead with fresh perspectives that add value beyond the source material.
+      Draw connections to other domains and broader implications.
+      Maintain the user's voice while providing genuine insights.
       
-      Create content for each platform:
+      Create content for each platform that focuses on insights and implications, NOT just restating the topic:
       
-      TWITTER/X (280 chars): 
-      - Hook with counterintuitive insight
-      - Specific evidence or example
-      - Thought-provoking question or implication
+      TWITTER/X (280 chars MAX - MUST be tweetable): 
+      - Start with a counterintuitive hook or surprising fact
+      - Add specific evidence or statistic
+      - End with thought-provoking question
+      - Include 2-3 relevant hashtags
       
       LINKEDIN (1200-1500 chars):
-      - Professional analysis with industry implications
-      - Specific examples or data points  
-      - Actionable insight for professionals
+      - Open with professional relevance
+      - 2-3 key insights with business/career implications
+      - Specific example or case study
+      - Actionable takeaway for professionals
       - End with engagement question
       
       REDDIT (2000-2500 chars):
-      - Deep dive that provides genuine value to community
-      - Multiple perspectives or examples
-      - Anticipate and address potential objections
-      - Include specific details that demonstrate expertise
+      - Start with relatable angle for community
+      - Share personal perspective or experience
+      - 3-4 detailed points with evidence
+      - Anticipate skeptical questions
+      - End with discussion prompts
       
-      YOUTUBE (Video concept + key talking points):
-      - Compelling video concept/title
-      - 3-4 main talking points with specific examples
-      - Hook for opening 30 seconds
-      - Call-to-action for engagement
+      YOUTUBE (Video script outline):
+      - Title: "The Surprising Truth About [Topic]" format
+      - Hook: 15-second compelling opener
+      - 3 main points with examples
+      - Practical demonstrations or visuals
+      - Call-to-action for comments
       
       Respond in JSON format:
       {

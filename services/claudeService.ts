@@ -11,7 +11,7 @@ export interface AnalysisResult {
   }
 }
 
-export async function analyzeContent(content: string, sourceType: 'text' | 'url'): Promise<AnalysisResult> {
+export async function analyzeContent(content: string, sourceType: 'text' | 'url', userProfile?: any): Promise<AnalysisResult> {
   console.log('Analyzing content...')
   
   try {
@@ -23,7 +23,8 @@ export async function analyzeContent(content: string, sourceType: 'text' | 'url'
       },
       body: JSON.stringify({
         content,
-        sourceType
+        sourceType,
+        userProfile
       })
     })
 

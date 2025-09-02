@@ -12,7 +12,7 @@ const anthropic = anthropicApiKey ? new Anthropic({ apiKey: anthropicApiKey }) :
 
 export async function POST(request: NextRequest) {
   try {
-    const { content, sourceType } = await request.json()
+    const { content, sourceType, userProfile } = await request.json()
 
     if (!content) {
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
       try {
         const engine = new EnhancedContentEngine()
         
-        // Default user profile - in production, this would come from the user's settings
-        const userProfile = {
+        // Use provided profile or default
+        const profile = userProfile || {
           voice: 'insightful and engaging',
           expertise: ['technology', 'innovation', 'research'],
           preferences: {
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
           }
         }
         
-        const enhancedResult = await engine.generatePremiumContent(content, userProfile)
+        const enhancedResult = await engine.generatePremiumContent(content, profile)
         
         return NextResponse.json({
           analysis: enhancedResult.researchContext.domain + ': ' + enhancedResult.researchContext.keyDimensions.join(', '),

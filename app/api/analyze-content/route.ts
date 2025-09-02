@@ -88,35 +88,86 @@ async function analyzeWithClaude(content: string, sourceType: string) {
     throw new Error('Claude API not configured')
   }
 
-  const prompt = `Analyze this ${sourceType === 'url' ? 'article/web content' : 'thought/idea'} and provide:
-1. A comprehensive summary
-2. Key themes and topics (return as an array)
-3. Potential connections to other ideas
-4. Research suggestions for deeper exploration
-5. Content suggestions for social media platforms (Twitter/X, Reddit, LinkedIn, YouTube)
+  const prompt = `You are an expert content strategist and researcher. Analyze this ${sourceType === 'url' ? 'article/web content' : 'thought/idea'} with exceptional depth and insight.
 
 Content to analyze:
 ${content}
 
+Provide a comprehensive analysis that includes:
+
+1. **Executive Summary**: Write a detailed, insightful summary that captures the essence, nuance, and implications of this content. Go beyond surface-level observations to identify underlying patterns, assumptions, and potential impacts.
+
+2. **Key Themes & Concepts**: Identify 3-5 core themes, using specific, descriptive tags that would be valuable for knowledge management and future reference.
+
+3. **Intellectual Connections**: Draw sophisticated connections to:
+   - Related academic fields or disciplines
+   - Current trends and emerging patterns
+   - Historical precedents or parallels
+   - Potential future implications
+   - Cross-domain applications
+
+4. **Research Opportunities**: Suggest 3-5 specific, actionable research directions that would deepen understanding, including:
+   - Key questions to explore
+   - Experts or thought leaders to follow
+   - Specific papers, books, or resources to consult
+   - Experiments or investigations to conduct
+
+5. **Platform-Optimized Content**: Create compelling, high-value content for each platform:
+   
+   **Twitter/X**: Craft a thought-provoking thread (2-3 tweets) that:
+   - Opens with a compelling hook
+   - Provides genuine insight or a fresh perspective
+   - Includes relevant hashtags and a call-to-action
+   
+   **Reddit**: Write an engaging discussion starter that:
+   - Poses thoughtful questions to the community
+   - Shares unique insights or experiences
+   - Invites meaningful dialogue
+   - Fits the culture of relevant subreddits
+   
+   **LinkedIn**: Compose a professional thought leadership post that:
+   - Demonstrates expertise and insight
+   - Provides actionable value to professionals
+   - Includes a compelling narrative or case study
+   - Ends with a thoughtful question or call-to-action
+   
+   **YouTube**: Outline a compelling video script structure:
+   - Attention-grabbing intro (first 15 seconds)
+   - 3-5 key points with supporting evidence
+   - Engaging examples or demonstrations
+   - Strong conclusion with next steps
+
 Return your analysis in this JSON format:
 {
-  "summary": "detailed summary here",
-  "tags": ["tag1", "tag2", "tag3"],
-  "connections": ["connection1", "connection2"],
-  "insights": ["insight1", "insight2", "insight3"],
+  "summary": "comprehensive executive summary with deep insights",
+  "tags": ["specific_concept_1", "domain_area_2", "methodology_3", "application_4", "trend_5"],
+  "connections": [
+    "Sophisticated connection to related field with explanation",
+    "Link to emerging trend with specific examples",
+    "Historical parallel with lessons learned",
+    "Cross-domain application with potential impact"
+  ],
+  "insights": [
+    "Specific research direction with methodology",
+    "Key question to explore with hypothesis",
+    "Resource recommendation with rationale",
+    "Expert or community to engage with purpose",
+    "Experiment or investigation to conduct"
+  ],
   "content_suggestions": {
-    "x_twitter": "tweet content",
-    "reddit": "reddit post",
-    "linkedin": "linkedin post",
-    "youtube_script": "youtube script outline"
+    "x_twitter": "Thread with multiple tweets, hooks, insights, and hashtags",
+    "reddit": "Engaging discussion starter with questions and unique perspective",
+    "linkedin": "Professional thought leadership post with narrative and value",
+    "youtube_script": "Detailed video outline with timestamps and key points"
   }
 }`
 
   try {
     const response = await anthropic.messages.create({
       model: 'claude-3-opus-20240229',
-      max_tokens: 2000,
-      temperature: 0.7,
+      max_tokens: 4000,
+      temperature: 0.8,
+      system: "You are an elite content strategist and researcher who produces exceptionally high-quality, nuanced analysis. Your insights should be specific, actionable, and demonstrate deep understanding. Avoid generic observations and surface-level analysis.",
       messages: [{
         role: 'user',
         content: prompt

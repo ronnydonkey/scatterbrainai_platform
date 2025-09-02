@@ -176,53 +176,135 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
 
           {/* Content Suggestions */}
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
               Platform-Optimized Content
             </h3>
             
-            {Object.entries(content).length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <p>No content generated yet. Please try again.</p>
-              </div>
-            ) : (
-              Object.entries(content).map(([platform, text]) => {
-                const Icon = platformIcons[platform as keyof typeof platformIcons]
-                const colorClass = platformColors[platform as keyof typeof platformColors]
-                
-                if (!Icon || !text) return null
-                
-                return (
-                <div key={platform} className="bg-gray-50 rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <div className={`p-2 rounded-lg ${colorClass}`}>
-                        <Icon className="w-5 h-5" />
-                      </div>
-                      <h4 className="font-medium text-gray-900 capitalize">
-                        {platform === 'twitter' || platform === 'x_twitter' ? 'Twitter/X' : 
-                         platform === 'youtube' || platform === 'youtube_script' ? 'YouTube' : 
-                         platform.charAt(0).toUpperCase() + platform.slice(1)}
-                      </h4>
+            {/* Debug info - remove after fixing */}
+            <div className="bg-yellow-50 p-4 rounded-lg mb-4">
+              <p className="text-sm text-yellow-800">Debug Info:</p>
+              <p className="text-xs text-yellow-700">Content keys: {Object.keys(content).join(', ') || 'none'}</p>
+              <p className="text-xs text-yellow-700">Has content: {Object.keys(content).length > 0 ? 'yes' : 'no'}</p>
+            </div>
+            
+            {/* Twitter/X */}
+            {(content.twitter || content.x_twitter) && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 rounded-lg bg-blue-50 text-blue-500">
+                      <Twitter className="w-5 h-5" />
                     </div>
-                    <button
-                      onClick={() => handleCopy(text as string, platform)}
-                      className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
-                    >
-                      {copiedPlatform === platform ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <Copy className="w-4 h-4" />
-                      )}
-                      <span className="text-sm">
-                        {copiedPlatform === platform ? 'Copied!' : 'Copy'}
-                      </span>
-                    </button>
+                    <h4 className="font-medium text-gray-900">Twitter/X</h4>
                   </div>
-                  <p className="text-gray-700 whitespace-pre-wrap">{String(text)}</p>
+                  <button
+                    onClick={() => handleCopy(content.twitter || content.x_twitter, 'twitter')}
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
+                  >
+                    {copiedPlatform === 'twitter' ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">
+                      {copiedPlatform === 'twitter' ? 'Copied!' : 'Copy'}
+                    </span>
+                  </button>
                 </div>
-              )
-            })
-          )}
+                <p className="text-gray-700 whitespace-pre-wrap">{content.twitter || content.x_twitter}</p>
+              </div>
+            )}
+            
+            {/* LinkedIn */}
+            {content.linkedin && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 rounded-lg bg-blue-50 text-blue-700">
+                      <Linkedin className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-medium text-gray-900">LinkedIn</h4>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(content.linkedin, 'linkedin')}
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
+                  >
+                    {copiedPlatform === 'linkedin' ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">
+                      {copiedPlatform === 'linkedin' ? 'Copied!' : 'Copy'}
+                    </span>
+                  </button>
+                </div>
+                <p className="text-gray-700 whitespace-pre-wrap">{content.linkedin}</p>
+              </div>
+            )}
+            
+            {/* Reddit */}
+            {content.reddit && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 rounded-lg bg-orange-50 text-orange-600">
+                      <MessageSquare className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-medium text-gray-900">Reddit</h4>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(content.reddit, 'reddit')}
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
+                  >
+                    {copiedPlatform === 'reddit' ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">
+                      {copiedPlatform === 'reddit' ? 'Copied!' : 'Copy'}
+                    </span>
+                  </button>
+                </div>
+                <p className="text-gray-700 whitespace-pre-wrap">{content.reddit}</p>
+              </div>
+            )}
+            
+            {/* YouTube */}
+            {(content.youtube || content.youtube_script) && (
+              <div className="bg-gray-50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <div className="p-2 rounded-lg bg-red-50 text-red-600">
+                      <Youtube className="w-5 h-5" />
+                    </div>
+                    <h4 className="font-medium text-gray-900">YouTube</h4>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(content.youtube || content.youtube_script, 'youtube')}
+                    className="flex items-center space-x-1 text-gray-600 hover:text-gray-900"
+                  >
+                    {copiedPlatform === 'youtube' ? (
+                      <Check className="w-4 h-4 text-green-600" />
+                    ) : (
+                      <Copy className="w-4 h-4" />
+                    )}
+                    <span className="text-sm">
+                      {copiedPlatform === 'youtube' ? 'Copied!' : 'Copy'}
+                    </span>
+                  </button>
+                </div>
+                <p className="text-gray-700 whitespace-pre-wrap">{content.youtube || content.youtube_script}</p>
+              </div>
+            )}
+            
+            {/* No content fallback */}
+            {Object.keys(content).length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <p>No content generated yet. Please check the console for errors.</p>
+              </div>
+            )}
           </div>
 
           {/* Exploration Paths */}

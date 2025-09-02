@@ -58,10 +58,10 @@ export async function POST(request: NextRequest) {
           key_themes: enhancedResult.researchContext.keyDimensions,
           connections: enhancedResult.researchContext.crossDisciplinaryConnections,
           content_suggestions: {
-            x_twitter: enhancedResult.content.twitter,
+            twitter: enhancedResult.content.twitter,
             reddit: enhancedResult.content.reddit,
             linkedin: enhancedResult.content.linkedin,
-            youtube_script: enhancedResult.content.youtube
+            youtube: enhancedResult.content.youtube
           },
           // Additional premium data
           counterintuitive_findings: enhancedResult.researchContext.counterintuitiveFindings,
@@ -112,11 +112,11 @@ export async function POST(request: NextRequest) {
           research_suggestions: analysis.insights,
           key_themes: analysis.tags,
           connections: analysis.connections,
-          content_suggestions: {
-            x_twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
+          content_suggestions: analysis.content_suggestions || {
+            twitter: `🧠 ${content.slice(0, 100)}... \n\n#${analysis.tags.join(' #')}`,
             reddit: `Just had this thought: ${content.slice(0, 200)}...\n\nWhat do you all think?`,
             linkedin: `Insights on ${analysis.tags.join(' and ')}: ${content.slice(0, 150)}...`,
-            youtube_script: `Today we're discussing: ${content.slice(0, 100)}...`
+            youtube: `Today we're discussing: ${content.slice(0, 100)}...`
           }
         }
 

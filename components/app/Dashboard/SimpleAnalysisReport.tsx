@@ -22,6 +22,11 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
   const [feedbackRating, setFeedbackRating] = useState<number | null>(null)
   const [feedbackText, setFeedbackText] = useState('')
 
+  // Debug logging
+  console.log('SimpleAnalysisReport - thought data:', thought)
+  console.log('SimpleAnalysisReport - analysis:', thought.analysis)
+  console.log('SimpleAnalysisReport - generated_content:', thought.generated_content)
+
   const handleCopy = (text: string, platform: string) => {
     navigator.clipboard.writeText(text)
     setCopiedPlatform(platform)
@@ -67,7 +72,7 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
   const explorationPaths = analysis.exploration_paths || analysis.explorationPaths || {}
   const voiceMetadata = analysis.voiceMetadata || {}
 
-  const platformIcons = {
+  const platformIcons: Record<string, any> = {
     twitter: Twitter,
     x_twitter: Twitter,
     linkedin: Linkedin,
@@ -76,7 +81,7 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
     youtube_script: Youtube
   }
 
-  const platformColors = {
+  const platformColors: Record<string, string> = {
     twitter: 'text-blue-500 bg-blue-50',
     x_twitter: 'text-blue-500 bg-blue-50',
     linkedin: 'text-blue-700 bg-blue-50',
@@ -185,7 +190,9 @@ export function SimpleAnalysisReport({ thought, onClose }: SimpleAnalysisReportP
                         <Icon className="w-5 h-5" />
                       </div>
                       <h4 className="font-medium text-gray-900 capitalize">
-                        {platform.replace('x_twitter', 'Twitter/X').replace('youtube_script', 'YouTube').replace('_', ' ')}
+                        {platform === 'twitter' || platform === 'x_twitter' ? 'Twitter/X' : 
+                         platform === 'youtube' || platform === 'youtube_script' ? 'YouTube' : 
+                         platform.charAt(0).toUpperCase() + platform.slice(1)}
                       </h4>
                     </div>
                     <button

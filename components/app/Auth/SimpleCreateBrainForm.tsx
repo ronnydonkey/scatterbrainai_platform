@@ -108,7 +108,7 @@ export function SimpleCreateBrainForm({ onSuccess }: CreateBrainFormProps) {
                 type="text"
                 value={brainName}
                 onChange={(e) => setBrainName(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                 placeholder="My Creative Brain"
                 required
               />
@@ -128,7 +128,7 @@ export function SimpleCreateBrainForm({ onSuccess }: CreateBrainFormProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                 placeholder="you@example.com"
                 required
               />
@@ -145,7 +145,7 @@ export function SimpleCreateBrainForm({ onSuccess }: CreateBrainFormProps) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
                 placeholder="Create a secure password"
                 required
                 minLength={6}

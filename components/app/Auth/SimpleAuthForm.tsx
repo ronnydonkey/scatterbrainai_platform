@@ -21,6 +21,9 @@ export function SimpleAuthForm() {
       
       if (error) {
         setError(error.message)
+      } else {
+        // Redirect to dashboard on successful login
+        window.location.href = '/app'
       }
     } catch {
       setError('An unexpected error occurred')
@@ -46,7 +49,7 @@ export function SimpleAuthForm() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               placeholder="Enter your email"
               required
             />
@@ -60,7 +63,7 @@ export function SimpleAuthForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-gray-900"
               placeholder="Enter your password"
               required
             />

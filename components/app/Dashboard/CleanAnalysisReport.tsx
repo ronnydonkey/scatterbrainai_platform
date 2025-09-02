@@ -25,6 +25,49 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
     setTimeout(() => setCopiedPlatform(null), 2000)
   }
 
+  // Format YouTube content if it's an object
+  const formatYouTubeContent = (content: any): string => {
+    if (typeof content === 'string') return content;
+    
+    if (content && typeof content === 'object') {
+      let formatted = '';
+      
+      if (content.title) {
+        formatted += `Title: ${content.title}\n\n`;
+      }
+      
+      if (content.description) {
+        formatted += `Description:\n${content.description}\n\n`;
+      }
+      
+      if (content.hook_script) {
+        formatted += `Hook Script:\n${content.hook_script}\n\n`;
+      }
+      
+      if (content.main_points && Array.isArray(content.main_points)) {
+        formatted += `Main Points:\n${content.main_points.map((point: any, index: number) => 
+          `${index + 1}. ${point}`
+        ).join('\n')}\n\n`;
+      }
+      
+      if (content.examples) {
+        formatted += `Examples:\n${content.examples}\n\n`;
+      }
+      
+      if (content.conclusion_script) {
+        formatted += `Conclusion:\n${content.conclusion_script}\n\n`;
+      }
+      
+      if (content.end_screen) {
+        formatted += `End Screen:\n${content.end_screen}`;
+      }
+      
+      return formatted.trim();
+    }
+    
+    return '';
+  }
+
   // Safely parse analysis content
   const analysis = thought.analysis || {}
   
@@ -150,7 +193,11 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                       </div>
                     </div>
                     <button
-                      onClick={() => handleCopy(content.twitter || content.x_twitter, 'twitter')}
+                      onClick={() => {
+                        const twitterContent = content.twitter || content.x_twitter;
+                        const textContent = typeof twitterContent === 'string' ? twitterContent : JSON.stringify(twitterContent);
+                        handleCopy(textContent, 'twitter');
+                      }}
                       className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                     >
                       {copiedPlatform === 'twitter' ? (
@@ -168,7 +215,9 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
-                      {content.twitter || content.x_twitter}
+                      {typeof (content.twitter || content.x_twitter) === 'string' 
+                        ? (content.twitter || content.x_twitter)
+                        : JSON.stringify(content.twitter || content.x_twitter, null, 2)}
                     </p>
                   </div>
                 </div>
@@ -186,7 +235,11 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                       </div>
                     </div>
                     <button
-                      onClick={() => handleCopy(content.linkedin, 'linkedin')}
+                      onClick={() => {
+                        const linkedinContent = content.linkedin;
+                        const textContent = typeof linkedinContent === 'string' ? linkedinContent : JSON.stringify(linkedinContent);
+                        handleCopy(textContent, 'linkedin');
+                      }}
                       className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                     >
                       {copiedPlatform === 'linkedin' ? (
@@ -204,7 +257,9 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
-                      {content.linkedin}
+                      {typeof content.linkedin === 'string' 
+                        ? content.linkedin
+                        : JSON.stringify(content.linkedin, null, 2)}
                     </p>
                   </div>
                 </div>
@@ -222,7 +277,11 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                       </div>
                     </div>
                     <button
-                      onClick={() => handleCopy(content.reddit, 'reddit')}
+                      onClick={() => {
+                        const redditContent = content.reddit;
+                        const textContent = typeof redditContent === 'string' ? redditContent : JSON.stringify(redditContent);
+                        handleCopy(textContent, 'reddit');
+                      }}
                       className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                     >
                       {copiedPlatform === 'reddit' ? (
@@ -240,7 +299,9 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
-                      {content.reddit}
+                      {typeof content.reddit === 'string' 
+                        ? content.reddit
+                        : JSON.stringify(content.reddit, null, 2)}
                     </p>
                   </div>
                 </div>
@@ -258,7 +319,13 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                       </div>
                     </div>
                     <button
-                      onClick={() => handleCopy(content.youtube || content.youtube_script, 'youtube')}
+                      onClick={() => {
+                        const youtubeContent = content.youtube || content.youtube_script;
+                        const textContent = typeof youtubeContent === 'string' 
+                          ? youtubeContent 
+                          : formatYouTubeContent(youtubeContent);
+                        handleCopy(textContent, 'youtube');
+                      }}
                       className="flex items-center space-x-2 px-3 py-1.5 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors"
                     >
                       {copiedPlatform === 'youtube' ? (
@@ -276,7 +343,15 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                   <div className="p-6">
                     <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm">
-                      {content.youtube || content.youtube_script}
+                      {(() => {
+                        const youtubeContent = content.youtube || content.youtube_script;
+                        if (typeof youtubeContent === 'string') {
+                          return youtubeContent;
+                        } else if (youtubeContent && typeof youtubeContent === 'object') {
+                          return formatYouTubeContent(youtubeContent);
+                        }
+                        return '';
+                      })()}
                     </p>
                   </div>
                 </div>

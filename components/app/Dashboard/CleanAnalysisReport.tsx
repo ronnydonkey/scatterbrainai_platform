@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, Copy, Check, Twitter, Linkedin, MessageSquare, Youtube, TrendingUp, Users, Target, Award, Zap } from 'lucide-react'
+import { X, Copy, Check, Twitter, Linkedin, MessageSquare, Youtube, TrendingUp, Users, Target, Award, Zap, Heart, Lightbulb, BookOpen, Sparkles } from 'lucide-react'
 
 interface CleanAnalysisReportProps {
   thought: {
@@ -71,6 +71,43 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
   // Safely parse analysis content
   const analysis = thought.analysis || {}
   
+  // Detect content type based on analysis
+  const detectContentType = () => {
+    const analysisText = JSON.stringify(analysis).toLowerCase();
+    const tags = analysis.key_themes || analysis.tags || [];
+    const tagsText = tags.join(' ').toLowerCase();
+    const domain = (analysis.researchContext?.domain || '').toLowerCase();
+    
+    // Check for personal/creative/wellness content indicators
+    const personalIndicators = [
+      'personal', 'memoir', 'story', 'journey', 'experience', 'reflection',
+      'creative', 'creativity', 'artistic', 'writing', 'art', 'music',
+      'mental health', 'wellness', 'recovery', 'healing', 'therapy', 'addiction',
+      'self-care', 'mindfulness', 'meditation', 'spiritual', 'growth',
+      'emotion', 'feeling', 'vulnerability', 'authentic', 'identity'
+    ];
+    
+    // Check for business content indicators
+    const businessIndicators = [
+      'business', 'market', 'strategy', 'product', 'startup', 'revenue',
+      'competitive', 'analysis', 'opportunity', 'investment', 'growth',
+      'customer', 'sales', 'marketing', 'profit', 'scalable'
+    ];
+    
+    const hasPersonalIndicators = personalIndicators.some(indicator => 
+      analysisText.includes(indicator) || tagsText.includes(indicator) || domain.includes(indicator)
+    );
+    
+    const hasBusinessIndicators = businessIndicators.some(indicator => 
+      analysisText.includes(indicator) || tagsText.includes(indicator) || domain.includes(indicator)
+    );
+    
+    // Default to personal if it has personal indicators or no clear business indicators
+    return hasPersonalIndicators || !hasBusinessIndicators ? 'personal' : 'business';
+  };
+  
+  const contentType = detectContentType();
+  
   // Parse generated_content if it's a string
   let parsedGeneratedContent = thought.generated_content
   if (typeof thought.generated_content === 'string') {
@@ -109,71 +146,162 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
         </div>
 
         <div className="overflow-y-auto max-h-[calc(90vh-88px)]">
-          {/* Opportunity Score Section */}
+          {/* Content Analysis Section - Conditional based on content type */}
           <div className="px-8 py-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">Opportunity Score</h3>
-                  <p className="text-sm text-gray-500 mt-1">AI analysis of content potential and market fit</p>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm text-gray-500">Overall Rating</div>
-                  <div className="text-3xl font-bold text-gray-900">{opportunityScore}</div>
-                  <div className="text-sm text-green-600">/ 10</div>
-                </div>
-              </div>
-
-              {/* Key Metrics */}
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Content Quality</span>
-                    <span className="text-sm text-gray-900">{qualityScore}%</span>
+            {contentType === 'business' ? (
+              /* Business Opportunity Score */
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Opportunity Score</h3>
+                    <p className="text-sm text-gray-500 mt-1">AI analysis of content potential and market fit</p>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-green-500 rounded-full transition-all duration-500"
-                      style={{ width: `${qualityScore}%` }}
-                    />
+                  <div className="text-right">
+                    <div className="text-sm text-gray-500">Overall Rating</div>
+                    <div className="text-3xl font-bold text-gray-900">{opportunityScore}</div>
+                    <div className="text-sm text-green-600">/ 10</div>
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Engagement Potential</span>
-                    <span className="text-sm text-gray-900">{engagementScore}%</span>
+                {/* Key Metrics */}
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Content Quality</span>
+                      <span className="text-sm text-gray-900">{qualityScore}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full transition-all duration-500"
+                        style={{ width: `${qualityScore}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                      style={{ width: `${engagementScore}%` }}
-                    />
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Engagement Potential</span>
+                      <span className="text-sm text-gray-900">{engagementScore}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                        style={{ width: `${engagementScore}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Market Demand</span>
+                      <span className="text-sm text-gray-900">{insightScore}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-purple-500 rounded-full transition-all duration-500"
+                        style={{ width: `${insightScore}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Action Button */}
+                <div className="mt-6 flex justify-center">
+                  <button className="flex items-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors shadow-sm">
+                    <Zap className="w-5 h-5" />
+                    <span>Build This Idea</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              /* Personal/Creative Content Analysis */
+              <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-900">Content Insights</h3>
+                    <p className="text-sm text-gray-500 mt-1">AI analysis of themes and resonance</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Heart className="w-5 h-5 text-pink-500" />
+                    <Sparkles className="w-5 h-5 text-purple-500" />
                   </div>
                 </div>
 
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-gray-700">Market Demand</span>
-                    <span className="text-sm text-gray-900">{insightScore}%</span>
+                {/* Key Themes */}
+                {(analysis.key_themes || analysis.tags || []).length > 0 && (
+                  <div className="mb-6">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Key Themes</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {(analysis.key_themes || analysis.tags || []).map((theme: string, index: number) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-purple-50 text-purple-700 rounded-full text-sm font-medium"
+                        >
+                          {theme}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                      style={{ width: `${insightScore}%` }}
-                    />
+                )}
+
+                {/* Emotional Resonance */}
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Emotional Resonance</span>
+                      <span className="text-sm text-gray-900">Strong</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-pink-500 rounded-full transition-all duration-500"
+                        style={{ width: '85%' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Authenticity</span>
+                      <span className="text-sm text-gray-900">Very High</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-purple-500 rounded-full transition-all duration-500"
+                        style={{ width: '92%' }}
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-gray-700">Connection Potential</span>
+                      <span className="text-sm text-gray-900">Excellent</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                        style={{ width: '88%' }}
+                      />
+                    </div>
                   </div>
                 </div>
+
+                {/* Key Insights */}
+                {analysis.analysis && (
+                  <div className="mt-6 p-4 bg-purple-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                      <Lightbulb className="w-4 h-4 mr-2 text-purple-600" />
+                      Key Insight
+                    </h4>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {typeof analysis.analysis === 'string' 
+                        ? analysis.analysis.slice(0, 200) + '...'
+                        : 'This content explores deep themes of human experience and connection.'}
+                    </p>
+                  </div>
+                )}
               </div>
-              
-              {/* Action Button */}
-              <div className="mt-6 flex justify-center">
-                <button className="flex items-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors shadow-sm">
-                  <Zap className="w-5 h-5" />
-                  <span>Build This Idea</span>
-                </button>
-              </div>
-            </div>
+            )}
           </div>
 
           {/* Platform-Optimized Content */}
@@ -359,63 +487,108 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
             </div>
           </div>
 
-          {/* Market Analysis & Research Paths */}
+          {/* Analysis & Research Paths */}
           <div className="px-8 py-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Market Analysis */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Market Analysis</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-700">Market Timing</span>
-                      <span className="text-sm font-medium text-gray-900">Excellent</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-green-500 rounded-full" style={{ width: '85%' }} />
-                    </div>
-                  </div>
+            {contentType === 'business' ? (
+              /* Business Market Analysis */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Market Analysis */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Market Analysis</h3>
                   
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-700">Market Potential</span>
-                      <span className="text-sm font-medium text-gray-900">High Growth</span>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-700">Market Timing</span>
+                        <span className="text-sm font-medium text-gray-900">Excellent</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: '85%' }} />
+                      </div>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '90%' }} />
+                    
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-700">Market Potential</span>
+                        <span className="text-sm font-medium text-gray-900">High Growth</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: '90%' }} />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Competitive Position */}
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Competitive Position</h3>
-                
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-700">Unique Advantage</span>
-                      <span className="text-sm font-medium text-gray-900">Strong</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-purple-500 rounded-full" style={{ width: '88%' }} />
-                    </div>
-                  </div>
+                {/* Competitive Position */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Competitive Position</h3>
                   
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-700">Execution Feasibility</span>
-                      <span className="text-sm font-medium text-gray-900">Very High</span>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-700">Unique Advantage</span>
+                        <span className="text-sm font-medium text-gray-900">Strong</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-purple-500 rounded-full" style={{ width: '88%' }} />
+                      </div>
                     </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '92%' }} />
+                    
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-gray-700">Execution Feasibility</span>
+                        <span className="text-sm font-medium text-gray-900">Very High</span>
+                      </div>
+                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: '92%' }} />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              /* Personal/Creative Content Connections */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Content Takeaways */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <BookOpen className="w-5 h-5 mr-2 text-purple-600" />
+                    Key Takeaways
+                  </h3>
+                  
+                  <ul className="space-y-3">
+                    {(analysis.insights || analysis.research_suggestions || []).slice(0, 4).map((insight: string, index: number) => (
+                      <li key={index} className="flex items-start">
+                        <span className="text-purple-500 mr-2">•</span>
+                        <span className="text-sm text-gray-700">{insight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Connection Opportunities */}
+                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <Heart className="w-5 h-5 mr-2 text-pink-600" />
+                    Connection Opportunities
+                  </h3>
+                  
+                  <div className="space-y-3">
+                    {(analysis.connections || analysis.crossDisciplinaryConnections || [
+                      'Share your story to inspire others on similar journeys',
+                      'Connect with communities exploring these themes',
+                      'Use your experience to help others heal',
+                      'Create content that resonates with shared experiences'
+                    ]).slice(0, 4).map((connection: string, index: number) => (
+                      <div key={index} className="flex items-start">
+                        <span className="text-pink-500 mr-2">•</span>
+                        <span className="text-sm text-gray-700">{connection}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Research Paths */}
             {explorationPaths && Object.keys(explorationPaths).length > 0 && (

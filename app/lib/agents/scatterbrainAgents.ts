@@ -1,7 +1,9 @@
 import Anthropic from '@anthropic-ai/sdk';
 
 class ScatterbrainAgents {
-  constructor(apiKey) {
+  private anthropic: Anthropic;
+
+  constructor(apiKey: string) {
     this.anthropic = new Anthropic({
       apiKey: apiKey,
     });
@@ -11,7 +13,7 @@ class ScatterbrainAgents {
    * Agent 1: Research Agent
    * Extracts and structures raw information from scattered thoughts
    */
-  async researchAgent(input) {
+  async researchAgent(input: string): Promise<any> {
     const systemPrompt = `You are a Research Agent specialized in extracting and organizing information from scattered thoughts.
 
 Your ONLY job is to:
@@ -59,7 +61,7 @@ Be thorough but concise. Extract ONLY what's explicitly stated or clearly implie
    * Agent 2: Analysis Agent
    * Analyzes patterns, connections, and synthesizes insights
    */
-  async analysisAgent(researchData) {
+  async analysisAgent(researchData: any): Promise<any> {
     const systemPrompt = `You are an Analysis Agent specialized in finding patterns and synthesizing insights.
 
 Your ONLY job is to:
@@ -112,7 +114,7 @@ Focus on non-obvious insights and meaningful connections.`;
    * Agent 3: Content Agent
    * Creates beautiful, formatted content for presentation
    */
-  async contentAgent(analysisData, originalInput) {
+  async contentAgent(analysisData: any, originalInput: string): Promise<any> {
     const systemPrompt = `You are a Content Agent specialized in creating beautiful, engaging presentations of insights.
 
 Your ONLY job is to:
@@ -182,7 +184,7 @@ Return JSON:
   /**
    * Main pipeline: Runs all three agents in sequence
    */
-  async processPipeline(input) {
+  async processPipeline(input: string): Promise<any> {
     const startTime = Date.now();
     const results = {
       success: false,
@@ -231,7 +233,7 @@ Return JSON:
   /**
    * Utility: Parse JSON with fallback
    */
-  parseJSON(text) {
+  parseJSON(text: string): any {
     try {
       // Try to extract JSON from the response
       const jsonMatch = text.match(/\{[\s\S]*\}/);
@@ -254,7 +256,7 @@ Return JSON:
   /**
    * Get formatted output for display
    */
-  getFormattedOutput(pipelineResults) {
+  getFormattedOutput(pipelineResults: any): any {
     if (!pipelineResults.success) {
       return {
         error: true,

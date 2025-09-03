@@ -1,5 +1,19 @@
 import Anthropic from '@anthropic-ai/sdk';
 
+interface PipelineResults {
+  success: boolean;
+  research: any;
+  analysis: any;
+  content: any;
+  errors: string[];
+  timing: {
+    research?: number;
+    analysis?: number;
+    content?: number;
+    total?: number;
+  };
+}
+
 class ScatterbrainAgents {
   private anthropic: Anthropic;
 
@@ -56,7 +70,7 @@ Be thorough but concise. Extract ONLY what's explicitly stated or clearly implie
       throw new Error('Unexpected response format');
     } catch (error) {
       console.error('Research Agent Error:', error);
-      throw new Error(`Research Agent failed: ${error.message}`);
+      throw new Error(`Research Agent failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -112,7 +126,7 @@ Focus on non-obvious insights and meaningful connections.`;
       throw new Error('Unexpected response format');
     } catch (error) {
       console.error('Analysis Agent Error:', error);
-      throw new Error(`Analysis Agent failed: ${error.message}`);
+      throw new Error(`Analysis Agent failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
@@ -186,16 +200,16 @@ Return JSON:
       throw new Error('Unexpected response format');
     } catch (error) {
       console.error('Content Agent Error:', error);
-      throw new Error(`Content Agent failed: ${error.message}`);
+      throw new Error(`Content Agent failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 
   /**
    * Main pipeline: Runs all three agents in sequence
    */
-  async processPipeline(input: string): Promise<any> {
+  async processPipeline(input: string): Promise<PipelineResults> {
     const startTime = Date.now();
-    const results = {
+    const results: PipelineResults = {
       success: false,
       research: null,
       analysis: null,
@@ -232,7 +246,7 @@ Return JSON:
 
       return results;
     } catch (error) {
-      results.errors.push(error.message);
+      results.errors.push(error instanceof Error ? error.message : 'Unknown error');
       results.timing.total = Date.now() - startTime;
       console.error('Pipeline Error:', error);
       return results;

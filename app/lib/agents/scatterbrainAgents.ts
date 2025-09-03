@@ -49,8 +49,11 @@ Be thorough but concise. Extract ONLY what's explicitly stated or clearly implie
         }]
       });
 
-      const content = response.content[0].text;
-      return this.parseJSON(content);
+      const content = response.content[0];
+      if (content.type === 'text') {
+        return this.parseJSON(content.text);
+      }
+      throw new Error('Unexpected response format');
     } catch (error) {
       console.error('Research Agent Error:', error);
       throw new Error(`Research Agent failed: ${error.message}`);
@@ -102,8 +105,11 @@ Focus on non-obvious insights and meaningful connections.`;
         }]
       });
 
-      const content = response.content[0].text;
-      return this.parseJSON(content);
+      const content = response.content[0];
+      if (content.type === 'text') {
+        return this.parseJSON(content.text);
+      }
+      throw new Error('Unexpected response format');
     } catch (error) {
       console.error('Analysis Agent Error:', error);
       throw new Error(`Analysis Agent failed: ${error.message}`);
@@ -173,8 +179,11 @@ Return JSON:
         }]
       });
 
-      const content = response.content[0].text;
-      return this.parseJSON(content);
+      const content = response.content[0];
+      if (content.type === 'text') {
+        return this.parseJSON(content.text);
+      }
+      throw new Error('Unexpected response format');
     } catch (error) {
       console.error('Content Agent Error:', error);
       throw new Error(`Content Agent failed: ${error.message}`);

@@ -48,6 +48,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
   const [showVoiceDiscovery, setShowVoiceDiscovery] = useState(false)
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile | null>(null)
   const [checkingVoiceProfile, setCheckingVoiceProfile] = useState(true)
+  const [analysisError, setAnalysisError] = useState<string | null>(null)
 
   const checkVoiceProfile = useCallback(async () => {
     if (!user) return
@@ -132,12 +133,13 @@ export function SimpleDashboard({ profile }: DashboardProps) {
     if (!user) return
     
     setLoading(true)
+    setAnalysisError(null)
     try {
       // Get the session token
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         console.error('No session found')
-        alert('Authentication error: Please sign in again.')
+        setAnalysisError('Authentication error: Please sign in again.')
         setLoading(false)
         return
       }
@@ -160,7 +162,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
       if (!response.ok) {
         const errorData = await response.json()
         console.error('API error:', errorData)
-        alert(`Error: ${errorData.error || 'Failed to analyze content'}`)
+        setAnalysisError(errorData.error || 'Failed to analyze content. Please try again.')
         setLoading(false)
         return
       }
@@ -180,7 +182,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         
         if (thoughtError) {
           console.error('Error fetching new thought:', thoughtError)
-          alert('Error: Could not load the analysis results')
+          setAnalysisError('Could not load the analysis results. Please try again.')
           return
         }
         
@@ -194,11 +196,12 @@ export function SimpleDashboard({ profile }: DashboardProps) {
           setShowVoiceDiscovery(true)
         }
       } else {
-        alert('Error: Analysis failed. Please try again.')
+        setAnalysisError('Analysis failed. Please try again with shorter content.')
       }
     } catch (error) {
       console.error('Error analyzing content:', error)
-      alert(`Error: ${error instanceof Error ? error.message : 'Failed to analyze content'}`)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to analyze content'
+      setAnalysisError(`An error occurred. Try clicking analyze again OR shorten your content. ${errorMessage}`)
     } finally {
       setLoading(false)
     }
@@ -389,7 +392,14 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         </div>
       </main>
       
-      <AnalysisProgress isOpen={loading} />
+      <AnalysisProgress 
+        isOpen={loading || !!analysisError} 
+        error={analysisError}
+        onRetry={() => {
+          setAnalysisError(null);
+          // You might want to retry the last analysis here
+        }}
+      />
       
       {showReport && selectedThought && (
         <ErrorBoundary>

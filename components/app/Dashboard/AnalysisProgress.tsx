@@ -5,6 +5,8 @@ import { Brain, Search, Sparkles, CheckCircle, Clock } from 'lucide-react'
 
 interface AnalysisProgressProps {
   isOpen: boolean
+  error?: string | null
+  onRetry?: () => void
 }
 
 const steps = [
@@ -14,7 +16,7 @@ const steps = [
   { id: 4, name: 'Creating platform content', icon: CheckCircle, duration: 9000 }
 ]
 
-export function AnalysisProgress({ isOpen }: AnalysisProgressProps) {
+export function AnalysisProgress({ isOpen, error, onRetry }: AnalysisProgressProps) {
   const [currentStep, setCurrentStep] = useState(0)
   const [progress, setProgress] = useState(0)
   const [elapsedTime, setElapsedTime] = useState(0)
@@ -80,29 +82,52 @@ export function AnalysisProgress({ isOpen }: AnalysisProgressProps) {
           {/* Header */}
           <div className="text-center">
             <h3 className="text-2xl font-bold text-gray-900 mb-2">Analyzing Your Content</h3>
-            <p className="text-gray-600">This usually takes 25-35 seconds</p>
+            {!error && <p className="text-gray-600">This usually takes 25-35 seconds</p>}
           </div>
 
-          {/* Progress Bar */}
-          <div className="relative">
-            <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div 
-                className="bg-gradient-to-r from-blue-500 to-purple-600 h-full transition-all duration-300 ease-out"
-                style={{ width: `${progress}%` }}
-              />
+          {error ? (
+            /* Error Message */
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800 text-center">
+                {error}
+              </p>
+              {error.includes('shorten') && (
+                <p className="text-red-600 text-sm text-center mt-2">
+                  Refreshing the browser will lose your content.
+                </p>
+              )}
+              {onRetry && (
+                <button
+                  onClick={onRetry}
+                  className="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                >
+                  Try Again
+                </button>
+              )}
             </div>
-            <div className="flex justify-between mt-2 text-sm text-gray-600">
-              <span className="flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {formatTime(elapsedTime)}
-              </span>
-              <span>~{formatTime(Math.max(0, estimatedRemaining))} remaining</span>
+          ) : (
+            /* Progress Bar */
+            <div className="relative">
+              <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-purple-600 h-full transition-all duration-300 ease-out"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+              <div className="flex justify-between mt-2 text-sm text-gray-600">
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  {formatTime(elapsedTime)}
+                </span>
+                <span>~{formatTime(Math.max(0, estimatedRemaining))} remaining</span>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Steps */}
-          <div className="space-y-4">
-            {steps.map((step, index) => {
+          {/* Steps - only show when not in error state */}
+          {!error && (
+            <div className="space-y-4">
+              {steps.map((step, index) => {
               const Icon = step.icon
               const isActive = index === currentStep
               const isComplete = index < currentStep
@@ -149,14 +174,17 @@ export function AnalysisProgress({ isOpen }: AnalysisProgressProps) {
                 </div>
               )
             })}
-          </div>
+            </div>
+          )}
 
-          {/* Fun facts or tips */}
-          <div className="bg-blue-50 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
-              💡 <span className="font-medium">Did you know?</span> Our AI analyzes over 50 dimensions of your content to create authentic, engaging posts for each platform.
-            </p>
-          </div>
+          {/* Fun facts or tips - only show when not in error state */}
+          {!error && (
+            <div className="bg-blue-50 rounded-lg p-4">
+              <p className="text-sm text-blue-900">
+                💡 <span className="font-medium">Did you know?</span> Our AI analyzes over 50 dimensions of your content to create authentic, engaging posts for each platform.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

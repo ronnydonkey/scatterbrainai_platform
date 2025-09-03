@@ -75,14 +75,14 @@ export async function POST(request: NextRequest) {
     const analysisData = {
       // Core analysis
       analysis: formattedOutput.summary.overview,
-      research_suggestions: formattedOutput.metadata.patterns?.map(p => p.pattern) || [],
+      research_suggestions: formattedOutput.metadata.patterns?.map((p: any) => p.pattern) || [],
       key_themes: formattedOutput.metadata.themes || [],
-      connections: formattedOutput.metadata.patterns?.map(p => p.evidence.join(' → ')) || [],
+      connections: formattedOutput.metadata.patterns?.map((p: any) => p.evidence.join(' → ')) || [],
       
       // Content suggestions for social platforms
       content_suggestions: {
         twitter: formattedOutput.insights?.[0]?.description || 'Key insight from your thought',
-        reddit: formattedOutput.insights?.map(i => i.description).join('\n\n') || 'Discussion starter based on your insights',
+        reddit: formattedOutput.insights?.map((i: any) => i.description).join('\n\n') || 'Discussion starter based on your insights',
         linkedin: formattedOutput.summary.headline + '\n\n' + formattedOutput.summary.overview,
         youtube: {
           title: formattedOutput.summary.headline,

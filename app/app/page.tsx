@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { SimpleAuthForm } from '@/components/app/Auth/SimpleAuthForm'
 import { SimpleDashboard } from '@/components/app/Dashboard/SimpleDashboard'
 import { supabase } from '@/lib/supabase'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 export default function AppPage() {
   const { user, loading: authLoading } = useAuth()
@@ -38,9 +39,17 @@ export default function AppPage() {
 
   // Show dashboard if user is logged in and has profile
   if (user && profile) {
-    return <SimpleDashboard profile={profile} />
+    return (
+      <ErrorBoundary>
+        <SimpleDashboard profile={profile} />
+      </ErrorBoundary>
+    )
   }
 
   // Show auth form if not logged in
-  return <SimpleAuthForm />
+  return (
+    <ErrorBoundary>
+      <SimpleAuthForm />
+    </ErrorBoundary>
+  )
 }

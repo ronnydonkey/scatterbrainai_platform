@@ -91,7 +91,8 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
     const businessIndicators = [
       'business', 'market', 'strategy', 'product', 'startup', 'revenue',
       'competitive', 'analysis', 'opportunity', 'investment', 'growth',
-      'customer', 'sales', 'marketing', 'profit', 'scalable'
+      'customer', 'sales', 'marketing', 'profit', 'scalable', 'saas',
+      'b2b', 'b2c', 'enterprise', 'monetization', 'venture'
     ];
     
     const hasPersonalIndicators = personalIndicators.some(indicator => 
@@ -102,8 +103,21 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
       analysisText.includes(indicator) || tagsText.includes(indicator) || domain.includes(indicator)
     );
     
-    // Default to personal if it has personal indicators or no clear business indicators
-    return hasPersonalIndicators || !hasBusinessIndicators ? 'personal' : 'business';
+    // If it has personal indicators and no strong business focus, treat as personal
+    // If it has business indicators but also creative/personal elements, check the balance
+    if (hasPersonalIndicators && !hasBusinessIndicators) {
+      return 'personal';
+    } else if (hasBusinessIndicators && !hasPersonalIndicators) {
+      return 'business';
+    } else if (hasPersonalIndicators && hasBusinessIndicators) {
+      // For mixed content, check if it's primarily about creative/personal aspects
+      const creativeBusinessTerms = ['creative business', 'artistic entrepreneurship', 'creative revenue'];
+      const hasCreativeBusiness = creativeBusinessTerms.some(term => analysisText.includes(term));
+      return hasCreativeBusiness ? 'personal' : 'business';
+    }
+    
+    // Default to personal for unclear content
+    return 'personal';
   };
   
   const contentType = detectContentType();

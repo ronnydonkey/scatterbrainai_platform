@@ -8,7 +8,13 @@ const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+// Set timeout for API processing (30 seconds)
+const API_TIMEOUT = 30000;
+
 export async function POST(request: NextRequest) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+  
   try {
     // Get the user from the Authorization header
     const authHeader = request.headers.get('authorization')

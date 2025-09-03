@@ -10,17 +10,25 @@ const anthropicApiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 const anthropic = anthropicApiKey ? new Anthropic({ apiKey: anthropicApiKey }) : null
 
+// Set timeout for API processing (30 seconds)
+const API_TIMEOUT = 30000;
+
 export async function POST(request: NextRequest) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
+  
   try {
     const { content, sourceType, userProfile, brainId } = await request.json()
 
     if (!content) {
+      clearTimeout(timeoutId);
       return NextResponse.json({ error: 'Content is required' }, { status: 400 })
     }
 
     // Get the user from the Authorization header
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
+      clearTimeout(timeoutId);
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -29,6 +37,7 @@ export async function POST(request: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
+      clearTimeout(timeoutId);
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
@@ -98,6 +107,7 @@ export async function POST(request: NextRequest) {
           }, { status: 500 })
         }
 
+        clearTimeout(timeoutId);
         return NextResponse.json({
           success: true,
           thoughtId: thought.id,
@@ -144,6 +154,7 @@ export async function POST(request: NextRequest) {
           }, { status: 500 })
         }
 
+        clearTimeout(timeoutId);
         return NextResponse.json({
           success: true,
           thoughtId: thought.id,
@@ -152,13 +163,24 @@ export async function POST(request: NextRequest) {
       }
     } else {
       // No API key configured
+      clearTimeout(timeoutId);
       return NextResponse.json(
         { error: 'Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your environment variables.' },
         { status: 500 }
       )
     }
   } catch (error) {
+    clearTimeout(timeoutId);
     console.error('Error in analyze-content API:', error)
+    
+    // Check if it was a timeout
+    if (error instanceof Error && error.name === 'AbortError') {
+      return NextResponse.json(
+        { error: 'Request timed out. Please try again with shorter content.' },
+        { status: 504 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Failed to analyze content' },
       { status: 500 }

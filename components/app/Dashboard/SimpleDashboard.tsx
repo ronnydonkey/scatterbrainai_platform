@@ -12,6 +12,7 @@ import { TrialCountdown } from '../TrialCountdown'
 import { SimpleVoiceDiscoveryWizard } from '@/components/voice/SimpleVoiceDiscoveryWizard'
 import { VoiceProfileDisplay } from '@/components/voice/VoiceProfileDisplay'
 import { VoiceDiscoveryResponse, VoiceProfile } from '@/lib/onboarding/voice-discovery'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 interface Thought {
   id: string
@@ -391,13 +392,15 @@ export function SimpleDashboard({ profile }: DashboardProps) {
       <AnalysisProgress isOpen={loading} />
       
       {showReport && selectedThought && (
-        <CleanAnalysisReport 
-          thought={selectedThought} 
-          onClose={() => {
-            setShowReport(false)
-            setSelectedThought(null)
-          }}
-        />
+        <ErrorBoundary>
+          <CleanAnalysisReport 
+            thought={selectedThought} 
+            onClose={() => {
+              setShowReport(false)
+              setSelectedThought(null)
+            }}
+          />
+        </ErrorBoundary>
       )}
     </div>
   )

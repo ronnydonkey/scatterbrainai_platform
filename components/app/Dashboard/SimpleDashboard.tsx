@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase'
 import { SimpleInputArea } from './SimpleInputArea'
 import { SimpleThoughtCard } from './SimpleThoughtCard'
 import { CleanAnalysisReport } from './CleanAnalysisReport'
-import { StreamingAnalysisProgress } from './StreamingAnalysisProgress'
+import { RealtimeAnalysisProgress } from './RealtimeAnalysisProgress'
 import { TrialCountdown } from '../TrialCountdown'
 import { SimpleVoiceDiscoveryWizard } from '@/components/voice/SimpleVoiceDiscoveryWizard'
 import { VoiceProfileDisplay } from '@/components/voice/VoiceProfileDisplay'
@@ -49,8 +49,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile | null>(null)
   const [checkingVoiceProfile, setCheckingVoiceProfile] = useState(true)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
-  const [analysisStage, setAnalysisStage] = useState<'idle' | 'researching' | 'analyzing' | 'creating' | 'saving' | 'complete' | 'error'>('idle')
-  const [analysisTiming, setAnalysisTiming] = useState<{ research?: number, analysis?: number, content?: number }>({})
+  const [isProcessing, setIsProcessing] = useState(false)
 
   const checkVoiceProfile = useCallback(async () => {
     if (!user) return
@@ -136,8 +135,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
     
     setLoading(true)
     setAnalysisError(null)
-    setAnalysisStage('idle')
-    setAnalysisTiming({})
+    setIsProcessing(true)
     
     try {
       // Get the session token
@@ -185,31 +183,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         return
       }
 
-      // Simulate the 3-agent pipeline stages
-      const stages = [
-        { stage: 'researching' as const, duration: 1500 },
-        { stage: 'analyzing' as const, duration: 2000 },
-        { stage: 'creating' as const, duration: 1500 }
-      ]
-      
-      const startTime = Date.now()
-      let currentTime = { research: 0, analysis: 0, content: 0 }
-      
-      // Progress through stages
-      for (const { stage, duration } of stages) {
-        setAnalysisStage(stage)
-        await new Promise(resolve => setTimeout(resolve, duration))
-        
-        // Update timing
-        if (stage === 'researching') currentTime.research = Date.now() - startTime
-        if (stage === 'analyzing') currentTime.analysis = Date.now() - startTime - currentTime.research!
-        if (stage === 'creating') currentTime.content = Date.now() - startTime - currentTime.research! - currentTime.analysis!
-        
-        setAnalysisTiming({ ...currentTime })
-      }
-      
-      // Now call the actual API
-      setAnalysisStage('saving')
+      // Call the API directly - the progress component will handle the animation
       const response = await fetch('/api/analyze-content-v2', {
         method: 'POST',
         headers: { 
@@ -222,14 +196,13 @@ export function SimpleDashboard({ profile }: DashboardProps) {
       if (!response.ok) {
         const errorData = await response.json()
         setAnalysisError(errorData.error || 'Failed to analyze content.')
-        setAnalysisStage('error')
+        setIsProcessing(false)
         setLoading(false)
         return
       }
 
       const result = await response.json()
       if (result.success) {
-        setAnalysisStage('complete')
         await loadThoughts()
         
         const { data: newThought } = await supabase
@@ -242,21 +215,16 @@ export function SimpleDashboard({ profile }: DashboardProps) {
           setSelectedThought(newThought)
           setShowReport(true)
         }
-        
-        // Reset stage after a moment
-        setTimeout(() => setAnalysisStage('idle'), 1000)
       }
 
     } catch (error) {
       console.error('Error analyzing content:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze content'
       setAnalysisError(`An error occurred. ${errorMessage}`)
-      setAnalysisStage('error')
+      setIsProcessing(false)
     } finally {
-      // Loading state is managed by the streaming hook
-      if (!voiceProfile) {
-        setLoading(false)
-      }
+      setLoading(false)
+      setIsProcessing(false)
     }
   }
 
@@ -445,14 +413,12 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         </div>
       </main>
       
-      <StreamingAnalysisProgress 
-        isOpen={loading || !!analysisError || (analysisStage !== 'idle')} 
-        stage={analysisStage}
+      <RealtimeAnalysisProgress 
+        isOpen={loading || !!analysisError} 
+        isProcessing={isProcessing}
         error={analysisError}
-        timing={analysisTiming}
         onRetry={() => {
           setAnalysisError(null);
-          setAnalysisStage('idle');
         }}
       />
       

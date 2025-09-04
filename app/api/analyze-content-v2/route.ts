@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import ScatterbrainAgents from '../../lib/agents/scatterbrainAgents'
+import PowerfulSingleAgent from '../../lib/agents/powerfulSingleAgent'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -47,28 +47,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    let formattedOutput;
+    // Use the powerful single agent
+    const agent = new PowerfulSingleAgent(anthropicApiKey);
+    console.log('Starting analysis for user:', user.id);
     
-    // If synthesis results are provided, use them directly
-    if (synthesisResults) {
-      console.log('Using provided synthesis results for user:', user.id);
-      formattedOutput = synthesisResults;
-    } else {
-      // Otherwise run the pipeline
-      const agents = new ScatterbrainAgents(anthropicApiKey);
-      console.log('Starting 3-agent pipeline for user:', user.id);
-      const pipelineResults = await agents.processPipeline(content);
-      formattedOutput = agents.getFormattedOutput(pipelineResults);
-    }
+    const analysisResult = await agent.analyze(content);
     
-    if (!formattedOutput.success) {
-      console.error('Pipeline failed:', formattedOutput.message);
+    if (!analysisResult) {
+      console.error('Analysis failed');
       clearTimeout(timeoutId);
       return NextResponse.json(
         { 
           error: 'Analysis failed', 
-          details: formattedOutput.message,
-          partial: formattedOutput.partial 
+          details: 'Unable to process content'
         },
         { status: 500 }
       );
@@ -77,41 +68,32 @@ export async function POST(request: NextRequest) {
     // Prepare data for database
     const analysisData = {
       // Core analysis
-      analysis: formattedOutput.summary.overview,
-      research_suggestions: formattedOutput.metadata.patterns?.map((p: any) => p.pattern) || [],
-      key_themes: formattedOutput.metadata.themes || [],
-      connections: formattedOutput.metadata.patterns?.map((p: any) => p.evidence.join(' → ')) || [],
+      analysis: analysisResult.summary.overview,
+      research_suggestions: analysisResult.connections || [],
+      key_themes: analysisResult.themes || [],
+      connections: analysisResult.connections || [],
       
-      // Content suggestions for social platforms
-      content_suggestions: {
-        twitter: formattedOutput.insights?.[0]?.description || 'Key insight from your thought',
-        reddit: formattedOutput.insights?.map((i: any) => i.description).join('\n\n') || 'Discussion starter based on your insights',
-        linkedin: formattedOutput.summary.headline + '\n\n' + formattedOutput.summary.overview,
-        youtube: {
-          title: formattedOutput.summary.headline,
-          description: formattedOutput.summary.overview,
-          main_points: formattedOutput.highlights || []
-        }
-      },
+      // Platform-optimized content
+      content_suggestions: analysisResult.platform_content,
       
-      // Enhanced metadata from pipeline
-      insights: formattedOutput.insights,
-      action_items: formattedOutput.actions,
-      visual_elements: formattedOutput.visual,
-      pipeline_timing: formattedOutput.metadata.timing
+      // Enhanced metadata
+      insights: analysisResult.insights,
+      action_items: analysisResult.action_items,
+      key_insight: analysisResult.summary.key_insight,
+      processing_time: analysisResult.metadata.processing_time
     }
 
     // Create thought in database
     console.log('Saving thought to database...');
     const thoughtData = {
       user_id: user.id,
-      title: formattedOutput.summary.headline || 'New Insight',
+      title: analysisResult.summary.headline || 'New Insight',
       content: content.slice(0, 500),
       source_type: sourceType || 'text',
       source_data: content,
       analysis: analysisData,
       generated_content: analysisData.content_suggestions,
-      tags: formattedOutput.metadata.topics || []
+      tags: analysisResult.themes || []
     }
     
     const { data: thought, error: thoughtError } = await supabase
@@ -136,11 +118,11 @@ export async function POST(request: NextRequest) {
       success: true,
       thoughtId: thought.id,
       analysis: analysisData,
-      summary: formattedOutput.summary,
-      insights: formattedOutput.insights,
-      actions: formattedOutput.actions,
-      highlights: formattedOutput.highlights,
-      timing: formattedOutput.metadata.timing
+      summary: analysisResult.summary,
+      insights: analysisResult.insights,
+      actions: analysisResult.action_items,
+      themes: analysisResult.themes,
+      timing: { total: analysisResult.metadata.processing_time }
     })
 
   } catch (error) {

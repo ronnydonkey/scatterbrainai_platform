@@ -37,9 +37,18 @@ class PowerfulSingleAgent {
   private anthropic: Anthropic;
 
   constructor(apiKey: string) {
-    this.anthropic = new Anthropic({
-      apiKey: apiKey,
-    });
+    if (!apiKey) {
+      throw new Error('API key is required for PowerfulSingleAgent');
+    }
+    
+    try {
+      this.anthropic = new Anthropic({
+        apiKey: apiKey,
+      });
+    } catch (error) {
+      console.error('Failed to initialize Anthropic client:', error);
+      throw new Error(`Failed to initialize Anthropic client: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 
   async analyze(input: string): Promise<AnalysisResult> {

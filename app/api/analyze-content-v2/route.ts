@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
   
+  console.log('analyze-content-v2: Starting request');
+  console.log('Environment check:', {
+    hasAnthropicKey: !!anthropicApiKey,
+    hasSupabaseUrl: !!supabaseUrl,
+    hasSupabaseKey: !!supabaseServiceKey
+  });
+  
   try {
     const { content, sourceType, userProfile, brainId, synthesisResults } = await request.json()
 
@@ -25,6 +32,7 @@ export async function POST(request: NextRequest) {
 
     if (!anthropicApiKey) {
       clearTimeout(timeoutId);
+      console.error('Missing Anthropic API key');
       return NextResponse.json(
         { error: 'Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your environment variables.' },
         { status: 500 }
@@ -48,10 +56,33 @@ export async function POST(request: NextRequest) {
     }
 
     // Use the powerful single agent
-    const agent = new PowerfulSingleAgent(anthropicApiKey);
+    console.log('Creating PowerfulSingleAgent...');
+    let agent;
+    try {
+      agent = new PowerfulSingleAgent(anthropicApiKey);
+    } catch (agentError) {
+      console.error('Failed to create agent:', agentError);
+      clearTimeout(timeoutId);
+      return NextResponse.json(
+        { error: 'Failed to initialize AI agent', details: agentError instanceof Error ? agentError.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
+    
     console.log('Starting analysis for user:', user.id);
     
-    const analysisResult = await agent.analyze(content);
+    let analysisResult;
+    try {
+      analysisResult = await agent.analyze(content);
+      console.log('Analysis completed successfully');
+    } catch (analysisError) {
+      console.error('Analysis failed:', analysisError);
+      clearTimeout(timeoutId);
+      return NextResponse.json(
+        { error: 'Analysis failed', details: analysisError instanceof Error ? analysisError.message : 'Unknown error' },
+        { status: 500 }
+      );
+    }
     
     if (!analysisResult) {
       console.error('Analysis failed');

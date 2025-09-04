@@ -13,6 +13,7 @@ import { SimpleVoiceDiscoveryWizard } from '@/components/voice/SimpleVoiceDiscov
 import { VoiceProfileDisplay } from '@/components/voice/VoiceProfileDisplay'
 import { VoiceDiscoveryResponse, VoiceProfile } from '@/lib/onboarding/voice-discovery'
 import ErrorBoundary from '@/components/ErrorBoundary'
+import { useStreamingSynthesis } from '@/lib/agents/useStreamingSynthesis'
 
 interface Thought {
   id: string
@@ -144,8 +145,8 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         return
       }
 
-      // Use voice-aware analysis if voice profile exists
-      const endpoint = voiceProfile ? '/api/voice-analyze-content' : '/api/analyze-content'
+      // Use voice-aware analysis if voice profile exists, otherwise use the new v2 endpoint
+      const endpoint = voiceProfile ? '/api/voice-analyze-content' : '/api/analyze-content-v2'
       
       console.log('Calling API endpoint:', endpoint)
       const response = await fetch(endpoint, {

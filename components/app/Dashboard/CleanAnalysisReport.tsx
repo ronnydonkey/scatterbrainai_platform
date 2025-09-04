@@ -142,59 +142,48 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                 )}
 
-                {/* Emotional Resonance */}
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Emotional Resonance</span>
-                      <span className="text-sm text-gray-900">Strong</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-pink-500 rounded-full transition-all duration-500"
-                        style={{ width: '85%' }}
-                      />
-                    </div>
+                {/* Key Insights from AI Analysis */}
+                {(analysis.insights || []).length > 0 && (
+                  <div className="space-y-3 mb-6">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Key Insights</h4>
+                    {analysis.insights.slice(0, 3).map((insight: any, index: number) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-start">
+                          <Lightbulb className="w-4 h-4 text-purple-600 mt-0.5 mr-2 flex-shrink-0" />
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{insight.title || `Insight ${index + 1}`}</p>
+                            <p className="text-sm text-gray-600 mt-1">{insight.description || insight}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                )}
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Authenticity</span>
-                      <span className="text-sm text-gray-900">Very High</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                        style={{ width: '92%' }}
-                      />
-                    </div>
+                {/* Action Items from AI */}
+                {(analysis.action_items || []).length > 0 && (
+                  <div className="space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700 mb-3">Suggested Actions</h4>
+                    {analysis.action_items.slice(0, 3).map((action: any, index: number) => (
+                      <div key={index} className="flex items-start">
+                        <Zap className="w-4 h-4 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+                        <p className="text-sm text-gray-700">{typeof action === 'string' ? action : action.description}</p>
+                      </div>
+                    ))}
                   </div>
+                )}
 
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Connection Potential</span>
-                      <span className="text-sm text-gray-900">Excellent</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                        style={{ width: '88%' }}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Key Insights */}
+                {/* Summary Overview */}
                 {analysis.analysis && (
                   <div className="mt-6 p-4 bg-purple-50 rounded-lg">
                     <h4 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
-                      <Lightbulb className="w-4 h-4 mr-2 text-purple-600" />
-                      Key Insight
+                      <Sparkles className="w-4 h-4 mr-2 text-purple-600" />
+                      Summary
                     </h4>
                     <p className="text-sm text-gray-700 leading-relaxed">
                       {typeof analysis.analysis === 'string' 
-                        ? analysis.analysis.slice(0, 200) + '...'
-                        : 'This content explores deep themes of human experience and connection.'}
+                        ? analysis.analysis
+                        : 'Analysis in progress...'}
                     </p>
                   </div>
                 )}

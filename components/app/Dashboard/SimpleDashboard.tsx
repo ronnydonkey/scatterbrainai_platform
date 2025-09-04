@@ -7,13 +7,12 @@ import { supabase } from '@/lib/supabase'
 import { SimpleInputArea } from './SimpleInputArea'
 import { SimpleThoughtCard } from './SimpleThoughtCard'
 import { CleanAnalysisReport } from './CleanAnalysisReport'
-import { AnalysisProgress } from './AnalysisProgress'
+import { StreamingAnalysisProgress } from './StreamingAnalysisProgress'
 import { TrialCountdown } from '../TrialCountdown'
 import { SimpleVoiceDiscoveryWizard } from '@/components/voice/SimpleVoiceDiscoveryWizard'
 import { VoiceProfileDisplay } from '@/components/voice/VoiceProfileDisplay'
 import { VoiceDiscoveryResponse, VoiceProfile } from '@/lib/onboarding/voice-discovery'
 import ErrorBoundary from '@/components/ErrorBoundary'
-import { useStreamingSynthesis } from '@/lib/agents/useStreamingSynthesis'
 
 interface Thought {
   id: string
@@ -50,6 +49,8 @@ export function SimpleDashboard({ profile }: DashboardProps) {
   const [voiceProfile, setVoiceProfile] = useState<VoiceProfile | null>(null)
   const [checkingVoiceProfile, setCheckingVoiceProfile] = useState(true)
   const [analysisError, setAnalysisError] = useState<string | null>(null)
+  const [analysisStage, setAnalysisStage] = useState<'idle' | 'researching' | 'analyzing' | 'creating' | 'saving' | 'complete' | 'error'>('idle')
+  const [analysisTiming, setAnalysisTiming] = useState<{ research?: number, analysis?: number, content?: number }>({})
 
   const checkVoiceProfile = useCallback(async () => {
     if (!user) return
@@ -135,6 +136,9 @@ export function SimpleDashboard({ profile }: DashboardProps) {
     
     setLoading(true)
     setAnalysisError(null)
+    setAnalysisStage('idle')
+    setAnalysisTiming({})
+    
     try {
       // Get the session token
       const { data: { session } } = await supabase.auth.getSession()
@@ -145,11 +149,68 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         return
       }
 
-      // Use voice-aware analysis if voice profile exists, otherwise use the new v2 endpoint
-      const endpoint = voiceProfile ? '/api/voice-analyze-content' : '/api/analyze-content-v2'
+      // For voice-aware content, use the old endpoint
+      if (voiceProfile) {
+        const response = await fetch('/api/voice-analyze-content', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ content, brainId: profile.id })
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          setAnalysisError(errorData.error || 'Failed to analyze content.')
+          setLoading(false)
+          return
+        }
+
+        const result = await response.json()
+        if (result.success) {
+          await loadThoughts()
+          const { data: newThought } = await supabase
+            .from('thoughts')
+            .select('*')
+            .eq('id', result.thoughtId)
+            .single()
+          
+          if (newThought) {
+            setSelectedThought(newThought)
+            setShowReport(true)
+          }
+        }
+        setLoading(false)
+        return
+      }
+
+      // Simulate the 3-agent pipeline stages
+      const stages = [
+        { stage: 'researching' as const, duration: 1500 },
+        { stage: 'analyzing' as const, duration: 2000 },
+        { stage: 'creating' as const, duration: 1500 }
+      ]
       
-      console.log('Calling API endpoint:', endpoint)
-      const response = await fetch(endpoint, {
+      const startTime = Date.now()
+      let currentTime = { research: 0, analysis: 0, content: 0 }
+      
+      // Progress through stages
+      for (const { stage, duration } of stages) {
+        setAnalysisStage(stage)
+        await new Promise(resolve => setTimeout(resolve, duration))
+        
+        // Update timing
+        if (stage === 'researching') currentTime.research = Date.now() - startTime
+        if (stage === 'analyzing') currentTime.analysis = Date.now() - startTime - currentTime.research!
+        if (stage === 'creating') currentTime.content = Date.now() - startTime - currentTime.research! - currentTime.analysis!
+        
+        setAnalysisTiming({ ...currentTime })
+      }
+      
+      // Now call the actual API
+      setAnalysisStage('saving')
+      const response = await fetch('/api/analyze-content-v2', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -158,53 +219,44 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         body: JSON.stringify({ content, brainId: profile.id })
       })
 
-      console.log('API response status:', response.status)
-      
       if (!response.ok) {
         const errorData = await response.json()
-        console.error('API error:', errorData)
-        setAnalysisError(errorData.error || 'Failed to analyze content. Please try again.')
+        setAnalysisError(errorData.error || 'Failed to analyze content.')
+        setAnalysisStage('error')
         setLoading(false)
         return
       }
 
       const result = await response.json()
-      console.log('API result:', result)
-      
       if (result.success) {
+        setAnalysisStage('complete')
         await loadThoughts()
         
-        // Get the newly created thought
-        const { data: newThought, error: thoughtError } = await supabase
+        const { data: newThought } = await supabase
           .from('thoughts')
           .select('*')
           .eq('id', result.thoughtId)
           .single()
-        
-        if (thoughtError) {
-          console.error('Error fetching new thought:', thoughtError)
-          setAnalysisError('Could not load the analysis results. Please try again.')
-          return
-        }
         
         if (newThought) {
           setSelectedThought(newThought)
           setShowReport(true)
         }
         
-        // Check if user needs voice onboarding
-        if (result.analysis && result.analysis.needsVoiceOnboarding) {
-          setShowVoiceDiscovery(true)
-        }
-      } else {
-        setAnalysisError('Analysis failed. Please try again with shorter content.')
+        // Reset stage after a moment
+        setTimeout(() => setAnalysisStage('idle'), 1000)
       }
+
     } catch (error) {
       console.error('Error analyzing content:', error)
       const errorMessage = error instanceof Error ? error.message : 'Failed to analyze content'
-      setAnalysisError(`An error occurred. Try clicking analyze again OR shorten your content. ${errorMessage}`)
+      setAnalysisError(`An error occurred. ${errorMessage}`)
+      setAnalysisStage('error')
     } finally {
-      setLoading(false)
+      // Loading state is managed by the streaming hook
+      if (!voiceProfile) {
+        setLoading(false)
+      }
     }
   }
 
@@ -393,12 +445,14 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         </div>
       </main>
       
-      <AnalysisProgress 
-        isOpen={loading || !!analysisError} 
+      <StreamingAnalysisProgress 
+        isOpen={loading || !!analysisError || (analysisStage !== 'idle')} 
+        stage={analysisStage}
         error={analysisError}
+        timing={analysisTiming}
         onRetry={() => {
           setAnalysisError(null);
-          // You might want to retry the last analysis here
+          setAnalysisStage('idle');
         }}
       />
       

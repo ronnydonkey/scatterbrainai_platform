@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT);
   
   try {
-    const { content, sourceType, userProfile, brainId } = await request.json()
+    const { content, sourceType, userProfile, brainId, synthesisResults } = await request.json()
 
     if (!content) {
       clearTimeout(timeoutId);
@@ -47,16 +47,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    // Initialize the 3-agent pipeline
-    const agents = new ScatterbrainAgents(anthropicApiKey);
+    let formattedOutput;
     
-    console.log('Starting 3-agent pipeline for user:', user.id);
-    
-    // Run the pipeline
-    const pipelineResults = await agents.processPipeline(content);
-    
-    // Get formatted output
-    const formattedOutput = agents.getFormattedOutput(pipelineResults);
+    // If synthesis results are provided, use them directly
+    if (synthesisResults) {
+      console.log('Using provided synthesis results for user:', user.id);
+      formattedOutput = synthesisResults;
+    } else {
+      // Otherwise run the pipeline
+      const agents = new ScatterbrainAgents(anthropicApiKey);
+      console.log('Starting 3-agent pipeline for user:', user.id);
+      const pipelineResults = await agents.processPipeline(content);
+      formattedOutput = agents.getFormattedOutput(pipelineResults);
+    }
     
     if (!formattedOutput.success) {
       console.error('Pipeline failed:', formattedOutput.message);

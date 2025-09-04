@@ -5,7 +5,7 @@ import { Brain, Search, Sparkles, CheckCircle, Clock, AlertCircle } from 'lucide
 
 interface StreamingAnalysisProgressProps {
   isOpen: boolean
-  stage: 'idle' | 'research' | 'analysis' | 'content' | 'complete' | 'error'
+  stage: 'idle' | 'researching' | 'analyzing' | 'creating' | 'saving' | 'complete' | 'error'
   error?: string | null
   timing?: {
     research?: number
@@ -33,10 +33,18 @@ export function StreamingAnalysisProgress({
 
   const getStepStatus = (stepId: string) => {
     if (stage === 'error') return 'error'
-    if (stage === 'complete') return 'complete'
+    if (stage === 'complete' || stage === 'saving') return 'complete'
     
+    // Map stage names to step IDs
+    const stageMapping: Record<string, string> = {
+      'researching': 'research',
+      'analyzing': 'analysis',
+      'creating': 'content'
+    }
+    
+    const currentStep = stageMapping[stage] || 'idle'
     const stageOrder = ['research', 'analysis', 'content']
-    const currentIndex = stageOrder.indexOf(stage)
+    const currentIndex = stageOrder.indexOf(currentStep)
     const stepIndex = stageOrder.indexOf(stepId)
     
     if (stepIndex < currentIndex) return 'complete'

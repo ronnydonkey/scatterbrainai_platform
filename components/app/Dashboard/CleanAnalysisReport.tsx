@@ -71,56 +71,7 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
   // Safely parse analysis content
   const analysis = thought.analysis || {}
   
-  // Detect content type based on analysis
-  const detectContentType = () => {
-    const analysisText = JSON.stringify(analysis).toLowerCase();
-    const tags = analysis.key_themes || analysis.tags || [];
-    const tagsText = tags.join(' ').toLowerCase();
-    const domain = (analysis.researchContext?.domain || '').toLowerCase();
-    
-    // Check for personal/creative/wellness content indicators
-    const personalIndicators = [
-      'personal', 'memoir', 'story', 'journey', 'experience', 'reflection',
-      'creative', 'creativity', 'artistic', 'writing', 'art', 'music',
-      'mental health', 'wellness', 'recovery', 'healing', 'therapy', 'addiction',
-      'self-care', 'mindfulness', 'meditation', 'spiritual', 'growth',
-      'emotion', 'feeling', 'vulnerability', 'authentic', 'identity'
-    ];
-    
-    // Check for business content indicators
-    const businessIndicators = [
-      'business', 'market', 'strategy', 'product', 'startup', 'revenue',
-      'competitive', 'analysis', 'opportunity', 'investment', 'growth',
-      'customer', 'sales', 'marketing', 'profit', 'scalable', 'saas',
-      'b2b', 'b2c', 'enterprise', 'monetization', 'venture'
-    ];
-    
-    const hasPersonalIndicators = personalIndicators.some(indicator => 
-      analysisText.includes(indicator) || tagsText.includes(indicator) || domain.includes(indicator)
-    );
-    
-    const hasBusinessIndicators = businessIndicators.some(indicator => 
-      analysisText.includes(indicator) || tagsText.includes(indicator) || domain.includes(indicator)
-    );
-    
-    // If it has personal indicators and no strong business focus, treat as personal
-    // If it has business indicators but also creative/personal elements, check the balance
-    if (hasPersonalIndicators && !hasBusinessIndicators) {
-      return 'personal';
-    } else if (hasBusinessIndicators && !hasPersonalIndicators) {
-      return 'business';
-    } else if (hasPersonalIndicators && hasBusinessIndicators) {
-      // For mixed content, check if it's primarily about creative/personal aspects
-      const creativeBusinessTerms = ['creative business', 'artistic entrepreneurship', 'creative revenue'];
-      const hasCreativeBusiness = creativeBusinessTerms.some(term => analysisText.includes(term));
-      return hasCreativeBusiness ? 'personal' : 'business';
-    }
-    
-    // Default to personal for unclear content
-    return 'personal';
-  };
-  
-  const contentType = detectContentType();
+  // Remove content type detection - treat all content equally
   
   // Parse generated_content if it's a string
   let parsedGeneratedContent = thought.generated_content
@@ -140,7 +91,6 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
   const qualityScore = analysis.quality_score || 92
   const engagementScore = analysis.engagement_score || 88
   const insightScore = analysis.insight_score || 95
-  const opportunityScore = analysis.opportunity_score || 9
 
   return (
     <div className="fixed inset-0 bg-black/10 flex items-center justify-center p-4 z-50">
@@ -160,75 +110,9 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
         </div>
 
         <div className="overflow-y-auto max-h-[calc(90vh-88px)]">
-          {/* Content Analysis Section - Conditional based on content type */}
+          {/* Content Analysis Section */}
           <div className="px-8 py-6">
-            {contentType === 'business' ? (
-              /* Business Opportunity Score */
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Opportunity Score</h3>
-                    <p className="text-sm text-gray-500 mt-1">AI analysis of content potential and market fit</p>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-gray-500">Overall Rating</div>
-                    <div className="text-3xl font-bold text-gray-900">{opportunityScore}</div>
-                    <div className="text-sm text-green-600">/ 10</div>
-                  </div>
-                </div>
-
-                {/* Key Metrics */}
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Content Quality</span>
-                      <span className="text-sm text-gray-900">{qualityScore}%</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-green-500 rounded-full transition-all duration-500"
-                        style={{ width: `${qualityScore}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Engagement Potential</span>
-                      <span className="text-sm text-gray-900">{engagementScore}%</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                        style={{ width: `${engagementScore}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-700">Market Demand</span>
-                      <span className="text-sm text-gray-900">{insightScore}%</span>
-                    </div>
-                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-purple-500 rounded-full transition-all duration-500"
-                        style={{ width: `${insightScore}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Action Button */}
-                <div className="mt-6 flex justify-center">
-                  <button className="flex items-center space-x-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors shadow-sm">
-                    <Zap className="w-5 h-5" />
-                    <span>Build This Idea</span>
-                  </button>
-                </div>
-              </div>
-            ) : (
-              /* Personal/Creative Content Analysis */
+              {/* Content Insights */}
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
@@ -315,7 +199,6 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                 )}
               </div>
-            )}
           </div>
 
           {/* Platform-Optimized Content */}
@@ -503,65 +386,7 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
 
           {/* Analysis & Research Paths */}
           <div className="px-8 py-6">
-            {contentType === 'business' ? (
-              /* Business Market Analysis */
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Market Analysis */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Market Analysis</h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-700">Market Timing</span>
-                        <span className="text-sm font-medium text-gray-900">Excellent</span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-green-500 rounded-full" style={{ width: '85%' }} />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-700">Market Potential</span>
-                        <span className="text-sm font-medium text-gray-900">High Growth</span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-blue-500 rounded-full" style={{ width: '90%' }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Competitive Position */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Competitive Position</h3>
-                  
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-700">Unique Advantage</span>
-                        <span className="text-sm font-medium text-gray-900">Strong</span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-purple-500 rounded-full" style={{ width: '88%' }} />
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-gray-700">Execution Feasibility</span>
-                        <span className="text-sm font-medium text-gray-900">Very High</span>
-                      </div>
-                      <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: '92%' }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Personal/Creative Content Connections */
+              {/* Content Connections and Takeaways */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Content Takeaways */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -602,7 +427,6 @@ export function CleanAnalysisReport({ thought, onClose }: CleanAnalysisReportPro
                   </div>
                 </div>
               </div>
-            )}
 
             {/* Research Paths */}
             {explorationPaths && Object.keys(explorationPaths).length > 0 && (

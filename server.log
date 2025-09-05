@@ -1,0 +1,24 @@
+
+> scatterbrainai-platform@0.1.0 dev
+> next dev
+
+  ▲ Next.js 14.2.32
+  - Local:        http://localhost:3000
+  - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 1157ms
+ ○ Compiling /api/test-db ...
+ ✓ Compiled /api/test-db in 515ms (127 modules)
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ GET /api/test-db 200 in 1071ms
+ ○ Compiling / ...
+ ✓ Compiled / in 11.7s (1484 modules)
+ HEAD / 200 in 11830ms
+ ✓ Compiled in 245ms (677 modules)
+ ✓ Compiled /api/test-env in 121ms (56 modules)
+ GET /api/test-env 200 in 161ms
+ ✓ Compiled /api/analyze-content in 246ms (174 modules)
+⚠️  Node.js 18 and below are deprecated and will no longer be supported in future versions of @supabase/supabase-js. Please upgrade to Node.js 20 or later. For more information, visit: https://github.com/orgs/supabase/discussions/37217
+ POST /api/analyze-content 401 in 308ms
+[?25h

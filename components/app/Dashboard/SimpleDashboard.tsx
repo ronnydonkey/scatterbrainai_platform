@@ -61,18 +61,23 @@ export function SimpleDashboard({ profile }: DashboardProps) {
         .eq('user_id', user.id)
         .single()
       
-      if (data) {
+      if (error) {
+        // If table doesn't exist or RLS blocks access, just skip voice features
+        if (error.code === '42P01' || error.code === 'PGRST116') {
+          // Voice profiles table not accessible, skipping voice features
+        }
+      } else if (data) {
         setVoiceProfile(data as VoiceProfile)
         setShowVoiceDiscovery(false)
       } else {
         // Check if they've dismissed voice discovery before
         const dismissed = localStorage.getItem('voice_discovery_dismissed')
         if (!dismissed) {
-          setShowVoiceDiscovery(true)
+          setShowVoiceDiscovery(false) // Disable voice discovery for now
         }
       }
-    } catch {
-      console.log('No voice profile found')
+    } catch (err) {
+      // No voice profile found
     } finally {
       setCheckingVoiceProfile(false)
     }
@@ -139,9 +144,9 @@ export function SimpleDashboard({ profile }: DashboardProps) {
     
     try {
       // Get the session token
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
-        console.error('No session found')
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      
+      if (sessionError || !session) {
         setAnalysisError('Authentication error: Please sign in again.')
         setLoading(false)
         return

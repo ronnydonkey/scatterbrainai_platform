@@ -3,10 +3,14 @@ import { createClient } from '@supabase/supabase-js'
 import PowerfulSingleAgent from '../../lib/agents/powerfulSingleAgent'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 const anthropicApiKey = process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey)
+// Create service client for database operations
+const supabaseService = createClient(supabaseUrl, supabaseServiceKey)
+// Create anon client for auth verification
+const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey)
 
 // Set timeout for API processing (45 seconds for 3 agents)
 const API_TIMEOUT = 45000;
@@ -48,10 +52,11 @@ export async function POST(request: NextRequest) {
 
     // Verify the token and get user
     const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token)
     
     if (authError || !user) {
       clearTimeout(timeoutId);
+      console.error('Auth verification failed:', authError?.message || 'No user found');
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
@@ -127,7 +132,7 @@ export async function POST(request: NextRequest) {
       tags: analysisResult.themes || []
     }
     
-    const { data: thought, error: thoughtError } = await supabase
+    const { data: thought, error: thoughtError } = await supabaseService
       .from('thoughts')
       .insert(thoughtData)
       .select()

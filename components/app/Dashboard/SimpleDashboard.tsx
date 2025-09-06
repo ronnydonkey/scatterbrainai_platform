@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import { SimpleInputArea } from './SimpleInputArea'
 import { SimpleThoughtCard } from './SimpleThoughtCard'
-import { CleanAnalysisReport } from './CleanAnalysisReport'
+import { ImprovedAnalysisReport } from './ImprovedAnalysisReport'
 import { RealtimeAnalysisProgress } from './RealtimeAnalysisProgress'
 import { TrialCountdown } from '../TrialCountdown'
 import { SimpleVoiceDiscoveryWizard } from '@/components/voice/SimpleVoiceDiscoveryWizard'
@@ -429,7 +429,7 @@ export function SimpleDashboard({ profile }: DashboardProps) {
       
       {showReport && selectedThought && (
         <ErrorBoundary>
-          <CleanAnalysisReport 
+          <ImprovedAnalysisReport 
             thought={selectedThought} 
             onClose={() => {
               setShowReport(false)

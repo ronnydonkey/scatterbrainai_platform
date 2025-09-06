@@ -18,6 +18,11 @@ export function ImprovedAnalysisReport({ thought, onClose }: ImprovedAnalysisRep
   const [activeTab, setActiveTab] = useState<'insights' | 'content' | 'overview'>('overview')
   const [copiedSection, setCopiedSection] = useState<string | null>(null)
 
+  // Debug logging
+  console.log('ImprovedAnalysisReport - thought:', thought)
+  console.log('ImprovedAnalysisReport - analysis:', thought.analysis)
+  console.log('ImprovedAnalysisReport - generated_content:', thought.generated_content)
+
   const analysis = thought.analysis || {}
   
   // Parse generated_content if it's a string
@@ -37,13 +42,25 @@ export function ImprovedAnalysisReport({ thought, onClose }: ImprovedAnalysisRep
     setTimeout(() => setCopiedSection(null), 2000)
   }
 
-  // Extract data from analysis
-  const summary = analysis.summary || {}
+  // Extract data from analysis - handle the actual API structure
+  const summary = {
+    headline: thought.title || 'Analysis Report',
+    description: analysis.analysis || analysis.key_insight || ''
+  }
   const insights = analysis.insights || []
-  const themes = analysis.themes || []
+  const themes = analysis.key_themes || analysis.themes || []
   const actionItems = analysis.action_items || []
-  const researchOpportunities = analysis.research_opportunities || []
-  const connectionOpportunities = analysis.connection_opportunities || []
+  const researchOpportunities = analysis.research_suggestions || []
+  const connectionOpportunities = analysis.connections || []
+
+  console.log('Extracted data:', {
+    summary,
+    insights,
+    themes,
+    actionItems,
+    researchOpportunities,
+    connectionOpportunities
+  })
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
